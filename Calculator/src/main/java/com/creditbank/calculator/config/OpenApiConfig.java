@@ -13,7 +13,7 @@ public class OpenApiConfig {
     public OpenAPI calculatorOpenApi() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("CreditBank Calculator API")
+                        .title("MC Calculator")
                         .description("API for generating loan offers and calculating credit schedule.")
                         .version("v0.0.1")
                         .license(new License().name("Proprietary")));
