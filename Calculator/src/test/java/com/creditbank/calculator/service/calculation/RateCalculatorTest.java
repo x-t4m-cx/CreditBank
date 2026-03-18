@@ -97,37 +97,6 @@ class RateCalculatorTest {
     }
 
     @Test
-    void shouldThrowWhenCalculatedRateIsNotPositive() {
-        ScoringProperties props = new ScoringProperties();
-        props.setBaseRate(new BigDecimal("1.0"));
-        props.setInsuranceDecrease(new BigDecimal("3.0"));
-        props.setSalaryClientDecrease(new BigDecimal("1.0"));
-        props.setTopManagerDecrease(new BigDecimal("3.0"));
-        props.setMarriedDecrease(new BigDecimal("3.0"));
-        props.setManAgeDecrease(new BigDecimal("3.0"));
-
-        RateCalculator calculator = new RateCalculator(props);
-
-        ScoringDataDto dto = ScoringDataDto.builder()
-                .isInsuranceEnabled(true)
-                .isSalaryClient(true)
-                .employment(EmploymentDto.builder()
-                        .employmentStatus(EmploymentStatus.EMPLOYED)
-                        .position(Position.TOP_MANAGER)
-                        .salary(new BigDecimal("100000"))
-                        .workExperienceTotal(120)
-                        .workExperienceCurrent(24)
-                        .employerINN("7707083893")
-                        .build())
-                .maritalStatus(MaritalStatus.MARRIED)
-                .gender(Gender.MALE)
-                .birthdate(LocalDate.now().minusYears(40))
-                .build();
-
-        assertThrows(ScoringException.class, () -> calculator.calculateScoringRate(dto));
-    }
-
-    @Test
     void shouldCalculatePrescoringRateWithoutDiscounts() {
         ScoringProperties props = new ScoringProperties();
         props.setBaseRate(new BigDecimal("15.0"));
@@ -357,7 +326,35 @@ class RateCalculatorTest {
                         .build())
                 .maritalStatus(MaritalStatus.SINGLE)
                 .gender(Gender.MALE)
-                .birthdate(LocalDate.now().minusYears(40))
+                .birthdate(LocalDate.now().minusYears(35))
+                .build();
+
+        BigDecimal rate = calculator.calculateScoringRate(dto);
+
+        assertEquals(new BigDecimal("9.0"), rate);
+    }
+    @Test
+    void shouldApplyMaleAgeDecreaseAtLowerBound() {
+        ScoringProperties props = new ScoringProperties();
+        props.setBaseRate(new BigDecimal("12.0"));
+        props.setManAgeDecrease(new BigDecimal("3.0"));
+
+        RateCalculator calculator = new RateCalculator(props);
+
+        ScoringDataDto dto = ScoringDataDto.builder()
+                .isInsuranceEnabled(false)
+                .isSalaryClient(false)
+                .employment(EmploymentDto.builder()
+                        .employmentStatus(EmploymentStatus.EMPLOYED)
+                        .position(Position.WORKER)
+                        .salary(new BigDecimal("100000"))
+                        .workExperienceTotal(120)
+                        .workExperienceCurrent(24)
+                        .employerINN("7707083893")
+                        .build())
+                .maritalStatus(MaritalStatus.SINGLE)
+                .gender(Gender.MALE)
+                .birthdate(LocalDate.now().minusYears(30))
                 .build();
 
         BigDecimal rate = calculator.calculateScoringRate(dto);
@@ -365,6 +362,34 @@ class RateCalculatorTest {
         assertEquals(new BigDecimal("9.0"), rate);
     }
 
+    @Test
+    void shouldApplyMaleAgeDecreaseAtUpperBound() {
+        ScoringProperties props = new ScoringProperties();
+        props.setBaseRate(new BigDecimal("12.0"));
+        props.setManAgeDecrease(new BigDecimal("3.0"));
+
+        RateCalculator calculator = new RateCalculator(props);
+
+        ScoringDataDto dto = ScoringDataDto.builder()
+                .isInsuranceEnabled(false)
+                .isSalaryClient(false)
+                .employment(EmploymentDto.builder()
+                        .employmentStatus(EmploymentStatus.EMPLOYED)
+                        .position(Position.WORKER)
+                        .salary(new BigDecimal("100000"))
+                        .workExperienceTotal(120)
+                        .workExperienceCurrent(24)
+                        .employerINN("7707083893")
+                        .build())
+                .maritalStatus(MaritalStatus.SINGLE)
+                .gender(Gender.MALE)
+                .birthdate(LocalDate.now().minusYears(55))
+                .build();
+
+        BigDecimal rate = calculator.calculateScoringRate(dto);
+
+        assertEquals(new BigDecimal("9.0"), rate);
+    }
     @Test
     void shouldNotApplyFemaleAgeDecreaseWhenAgeBelowRange() {
         ScoringProperties props = new ScoringProperties();

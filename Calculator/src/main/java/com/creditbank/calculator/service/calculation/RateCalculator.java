@@ -123,15 +123,6 @@ public class RateCalculator {
             }
         }
 
-        if (totalRate.compareTo(BigDecimal.ZERO) <= 0) {
-
-            log.error("Invalid calculated rate={}", totalRate);
-
-            throw new ScoringException(
-                    "Calculated rate is " + totalRate + " (must be positive)"
-            );
-        }
-
         log.info("Final calculateCredit rate calculated={}", totalRate);
 
         return totalRate;

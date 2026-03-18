@@ -3,14 +3,13 @@ package com.creditbank.calculator.config.property;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
 
 @Data
 @Component
 @ConfigurationProperties(prefix = "calculator.scoring")
 public class ScoringProperties {
-    private BigDecimal baseRate = new BigDecimal("15.0");
+    private BigDecimal baseRate = new BigDecimal("20.0");
 
     // Увеличения ставки
     private BigDecimal selfEmployedIncrease = new BigDecimal("2");

@@ -1,4 +1,4 @@
-package com.creditbank.calculator.exception;
+package com.creditbank.calculator.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

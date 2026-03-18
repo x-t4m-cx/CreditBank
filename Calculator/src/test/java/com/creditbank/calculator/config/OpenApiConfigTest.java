@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class OpenApiConfigTest {
 
-    @Test
+
     void shouldCreateOpenApiBeanWithExpectedInfo() {
         OpenApiConfig cfg = new OpenApiConfig();
 

@@ -1,7 +1,12 @@
 package com.creditbank.calculator.exception;
 
+import com.creditbank.calculator.dto.response.ErrorResponse;
 import com.creditbank.calculator.enums.Gender;
+import com.creditbank.calculator.handler.GlobalExceptionHandler;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -10,14 +15,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
 
 @ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerTest {
@@ -38,7 +46,8 @@ class GlobalExceptionHandlerTest {
         when(methodArgumentNotValidException.getBindingResult()).thenReturn(bindingResult);
         when(bindingResult.getAllErrors()).thenReturn(List.of(fe1, fe2));
 
-        ResponseEntity<ErrorResponse> response = handler.handleValidationExceptions(methodArgumentNotValidException);
+        ResponseEntity<ErrorResponse> response =
+                handler.handleValidationExceptions(methodArgumentNotValidException);
 
         assertEquals(400, response.getStatusCode().value());
         assertNotNull(response.getBody());
@@ -50,14 +59,43 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void shouldReturnBadRequestForScoringException() {
+    void shouldHandleObjectErrorWithoutClassCastException() {
+        ObjectError error = new ObjectError("request", "global error");
+
+        when(methodArgumentNotValidException.getBindingResult()).thenReturn(bindingResult);
+        when(bindingResult.getAllErrors()).thenReturn(List.of(error));
+
+        ResponseEntity<ErrorResponse> response =
+                handler.handleValidationExceptions(methodArgumentNotValidException);
+
+        assertEquals(400, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().getErrors().size());
+        assertEquals("global error", response.getBody().getErrors().get("request"));
+    }
+
+    @Test
+    void shouldHandleValidationExceptionWithNoErrors() {
+        when(methodArgumentNotValidException.getBindingResult()).thenReturn(bindingResult);
+        when(bindingResult.getAllErrors()).thenReturn(Collections.emptyList());
+
+        ResponseEntity<ErrorResponse> response =
+                handler.handleValidationExceptions(methodArgumentNotValidException);
+
+        assertEquals(400, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+        assertEquals(0, response.getBody().getErrors().size());
+    }
+
+    @Test
+    void shouldReturnUnprocessableEntityForScoringException() {
         ScoringException ex = new ScoringException("bad scoring");
 
         ResponseEntity<ErrorResponse> response = handler.handleScoringException(ex);
 
-        assertEquals(400, response.getStatusCode().value());
+        assertEquals(422, response.getStatusCode().value());
         assertNotNull(response.getBody());
-        assertEquals("Scoring failed", response.getBody().getError());
+        assertEquals("Scoring rejection", response.getBody().getError());
         assertEquals("bad scoring", response.getBody().getMessage());
     }
 
@@ -74,33 +112,270 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void shouldReturnBadRequestForHttpMessageNotReadableWhenCauseIsInvalidFormatEnum() {
+    void shouldReturnBadRequestForInvalidEnumValue() {
         InvalidFormatException ife = new InvalidFormatException(
                 null, "INVALID", Gender.class);
-        HttpMessageNotReadableException ex = new HttpMessageNotReadableException(
-                "invalid", ife, null);
 
-        ResponseEntity<ErrorResponse> response = handler.handleHttpMessageNotReadableException(ex);
+        HttpMessageNotReadableException ex =
+                new HttpMessageNotReadableException("invalid", ife, null);
 
-        assertEquals(400, response.getStatusCode().value());
-        assertNotNull(response.getBody());
-        assertEquals("Deserialization failed", response.getBody().getError());
-        assertTrue(response.getBody().getMessage().contains("Gender"));
-        assertTrue(response.getBody().getMessage().contains("INVALID"));
-        assertTrue(response.getBody().getMessage().contains("MALE"));
+        ResponseEntity<ErrorResponse> response =
+                handler.handleHttpMessageNotReadableException(ex);
+
+        String msg = response.getBody().getMessage();
+        assertTrue(msg.contains("Gender"));
+        assertTrue(msg.contains("INVALID"));
+        assertTrue(msg.contains("MALE"));
     }
 
     @Test
-    void shouldReturnBadRequestWithGenericMessageWhenHttpMessageNotReadableWithoutEnumCause() {
-        HttpMessageNotReadableException ex = new HttpMessageNotReadableException(
-                "invalid", new RuntimeException("parse error"), null);
+    void shouldReturnBadRequestForInvalidFormatNonEnum() {
+        InvalidFormatException ife = new InvalidFormatException(
+                null, "abc", Integer.class);
 
-        ResponseEntity<ErrorResponse> response = handler.handleHttpMessageNotReadableException(ex);
+        HttpMessageNotReadableException ex =
+                new HttpMessageNotReadableException("invalid", ife, null);
 
-        assertEquals(400, response.getStatusCode().value());
-        assertNotNull(response.getBody());
-        assertEquals("Deserialization failed", response.getBody().getError());
+        ResponseEntity<ErrorResponse> response =
+                handler.handleHttpMessageNotReadableException(ex);
+
+        String msg = response.getBody().getMessage();
+        assertTrue(msg.contains("abc"));
+        assertTrue(msg.contains("Integer"));
+    }
+
+    @Test
+    void shouldReturnBadRequestForMismatchedInputExceptionKnownField() {
+        MismatchedInputException mie = mock(MismatchedInputException.class);
+        JsonMappingException.Reference ref = mock(JsonMappingException.Reference.class);
+        when(ref.getFieldName()).thenReturn("amount");
+        when(mie.getPath()).thenReturn(List.of(ref));
+
+        HttpMessageNotReadableException ex =
+                new HttpMessageNotReadableException("invalid", mie, null);
+
+        ResponseEntity<ErrorResponse> response =
+                handler.handleHttpMessageNotReadableException(ex);
+
+        assertTrue(response.getBody().getMessage().contains("amount"));
+    }
+
+    @Test
+    void shouldReturnMalformedMessageForMismatchedUnknownField() {
+        MismatchedInputException mie = mock(MismatchedInputException.class);
+        when(mie.getPath()).thenReturn(Collections.emptyList());
+
+        HttpMessageNotReadableException ex =
+                new HttpMessageNotReadableException("invalid", mie, null);
+
+        ResponseEntity<ErrorResponse> response =
+                handler.handleHttpMessageNotReadableException(ex);
+
+        assertEquals("Request body is missing or malformed", response.getBody().getMessage());
+    }
+
+    @Test
+    void shouldReturnMalformedJsonMessage() {
+        JsonParseException jpe = new JsonParseException(null, "bad json");
+
+        HttpMessageNotReadableException ex =
+                new HttpMessageNotReadableException("invalid", jpe, null);
+
+        ResponseEntity<ErrorResponse> response =
+                handler.handleHttpMessageNotReadableException(ex);
+
+        assertEquals("Malformed JSON request", response.getBody().getMessage());
+    }
+
+    @Test
+    void shouldReturnGenericMessageWhenUnknownCause() {
+        HttpMessageNotReadableException ex =
+                new HttpMessageNotReadableException(
+                        "invalid", new RuntimeException("parse error"), null);
+
+        ResponseEntity<ErrorResponse> response =
+                handler.handleHttpMessageNotReadableException(ex);
+
         assertEquals("Invalid request format", response.getBody().getMessage());
     }
-}
 
+    @Test
+    void shouldReturnUnknownWhenPathIsNull() {
+        JsonMappingException ex = mock(JsonMappingException.class);
+        when(ex.getPath()).thenReturn(null);
+
+        String result = invokeGetFieldPath(ex);
+
+        assertEquals("unknown", result);
+    }
+
+    @Test
+    void shouldReturnUnknownWhenPathIsEmpty() {
+        JsonMappingException ex = mock(JsonMappingException.class);
+        when(ex.getPath()).thenReturn(Collections.emptyList());
+
+        String result = invokeGetFieldPath(ex);
+
+        assertEquals("unknown", result);
+    }
+
+    @Test
+    void shouldReturnFieldNameForSimpleField() {
+        JsonMappingException ex = mock(JsonMappingException.class);
+        JsonMappingException.Reference ref = new JsonMappingException.Reference(new Object(), "term");
+        when(ex.getPath()).thenReturn(List.of(ref));
+
+        String result = invokeGetFieldPath(ex);
+
+        assertEquals("term", result);
+    }
+
+    @Test
+    void shouldReturnIndexForArrayElement() {
+        JsonMappingException ex = mock(JsonMappingException.class);
+        JsonMappingException.Reference ref = new JsonMappingException.Reference(new Object(), 2);
+        when(ex.getPath()).thenReturn(List.of(ref));
+
+        String result = invokeGetFieldPath(ex);
+
+        assertEquals("[2]", result);
+    }
+
+    @Test
+    void shouldReturnLastFieldNameForNestedPath() {
+        JsonMappingException ex = mock(JsonMappingException.class);
+        JsonMappingException.Reference ref1 = new JsonMappingException.Reference(new Object(), "user");
+        JsonMappingException.Reference ref2 = new JsonMappingException.Reference(new Object(), "address");
+        JsonMappingException.Reference ref3 = new JsonMappingException.Reference(new Object(), "city");
+        when(ex.getPath()).thenReturn(List.of(ref1, ref2, ref3));
+
+        String result = invokeGetFieldPath(ex);
+
+        assertEquals("city", result);
+    }
+
+    @Test
+    void shouldReturnLastElementWithIndexForMixedPath() {
+        JsonMappingException ex = mock(JsonMappingException.class);
+        JsonMappingException.Reference ref1 = new JsonMappingException.Reference(new Object(), "users");
+        JsonMappingException.Reference ref2 = new JsonMappingException.Reference(new Object(), 0);
+        JsonMappingException.Reference ref3 = new JsonMappingException.Reference(new Object(), "name");
+        when(ex.getPath()).thenReturn(List.of(ref1, ref2, ref3));
+
+        String result = invokeGetFieldPath(ex);
+
+        assertEquals("name", result);
+    }
+
+    @Test
+    void shouldReturnIndexWhenLastElementIsIndex() {
+        JsonMappingException ex = mock(JsonMappingException.class);
+        JsonMappingException.Reference ref1 = new JsonMappingException.Reference(new Object(), "matrix");
+        JsonMappingException.Reference ref2 = new JsonMappingException.Reference(new Object(), 0);
+        JsonMappingException.Reference ref3 = new JsonMappingException.Reference(new Object(), 1);
+        when(ex.getPath()).thenReturn(List.of(ref1, ref2, ref3));
+
+        String result = invokeGetFieldPath(ex);
+
+        assertEquals("[1]", result);
+    }
+
+    @Test
+    void shouldReturnRootCauseForNestedExceptions() {
+        RuntimeException root = new RuntimeException("root");
+        IllegalArgumentException middle = new IllegalArgumentException("middle", root);
+        HttpMessageNotReadableException top = new HttpMessageNotReadableException("top", middle, null);
+
+        Throwable result = invokeGetRootCause(top);
+
+        assertEquals(root, result);
+    }
+
+    @Test
+    void shouldReturnSelfWhenNoCause() {
+        RuntimeException ex = new RuntimeException("no cause");
+
+        Throwable result = invokeGetRootCause(ex);
+
+        assertEquals(ex, result);
+    }
+
+
+    @Test
+    void shouldBuildInvalidFormatMessageWithNullTargetType() {
+        InvalidFormatException ife = new InvalidFormatException(null, "bad", null);
+
+        String result = invokeBuildInvalidFormatMessage(ife);
+
+        assertEquals("Invalid value 'bad' for field 'unknown'. Expected type: unknown", result);
+    }
+
+    @Test
+    void shouldBuildInvalidFormatMessageWithField() {
+        InvalidFormatException ife = mock(InvalidFormatException.class);
+        when(ife.getValue()).thenReturn("abc");
+        when(ife.getTargetType()).thenAnswer(invocation -> Integer.class);
+
+        JsonMappingException.Reference ref = new JsonMappingException.Reference(new Object(), "term");
+        when(ife.getPath()).thenReturn(List.of(ref));
+
+        String result = invokeBuildInvalidFormatMessage(ife);
+
+        assertEquals("Invalid value 'abc' for field 'term'. Expected type: Integer", result);
+    }
+
+    @Test
+    void shouldBuildMismatchedInputMessageWithKnownField() {
+        MismatchedInputException mie = mock(MismatchedInputException.class);
+        JsonMappingException.Reference ref = new JsonMappingException.Reference(new Object(), "amount");
+        when(mie.getPath()).thenReturn(List.of(ref));
+
+        String result = invokeBuildMismatchedInputMessage(mie);
+
+        assertEquals("Missing or invalid value for field 'amount'", result);
+    }
+
+    private String invokeGetFieldPath(JsonMappingException ex) {
+        try {
+            java.lang.reflect.Method method = GlobalExceptionHandler.class
+                    .getDeclaredMethod("getFieldPath", JsonMappingException.class);
+            method.setAccessible(true);
+            return (String) method.invoke(handler, ex);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to invoke getFieldPath", e);
+        }
+    }
+
+    private Throwable invokeGetRootCause(Throwable ex) {
+        try {
+            java.lang.reflect.Method method = GlobalExceptionHandler.class
+                    .getDeclaredMethod("getRootCause", Throwable.class);
+            method.setAccessible(true);
+            return (Throwable) method.invoke(handler, ex);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to invoke getRootCause", e);
+        }
+    }
+
+    private String invokeBuildInvalidFormatMessage(InvalidFormatException ex) {
+        try {
+            java.lang.reflect.Method method = GlobalExceptionHandler.class
+                    .getDeclaredMethod("buildInvalidFormatMessage", InvalidFormatException.class);
+            method.setAccessible(true);
+            return (String) method.invoke(handler, ex);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to invoke buildInvalidFormatMessage", e);
+        }
+    }
+
+    private String invokeBuildMismatchedInputMessage(MismatchedInputException ex) {
+        try {
+            java.lang.reflect.Method method = GlobalExceptionHandler.class
+                    .getDeclaredMethod("buildMismatchedInputMessage", MismatchedInputException.class);
+            method.setAccessible(true);
+            return (String) method.invoke(handler, ex);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to invoke buildMismatchedInputMessage", e);
+        }
+    }
+}
