@@ -11,11 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+
+import static com.creditbank.calculator.dictionary.CalculationConstants.*;
 
 @Service
 @Slf4j
@@ -26,13 +27,7 @@ public class OfferService {
     private final RateCalculator rateCalculator;
     private final PaymentCalculator paymentCalculator;
 
-    private static final int AMOUNT_SCALE = 2;
-    private static final int RATE_SCALE = 2;
-    private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_UP;
-
     public List<LoanOfferDto> generateOffers(LoanStatementRequestDto request) {
-
-        log.info("Start generating loan offers. Input request={}", request);
 
         List<LoanOfferDto> offers = new ArrayList<>();
 
@@ -41,11 +36,7 @@ public class OfferService {
         offers.add(createOffer(request, true, false));
         offers.add(createOffer(request, true, true));
 
-        log.debug("Offers before sorting: {}", offers);
-
         offers.sort(Comparator.comparing(LoanOfferDto::getRate).reversed());
-
-        log.info("Finished generating offers. Result={}", offers);
 
         return offers;
     }
@@ -53,24 +44,16 @@ public class OfferService {
     private LoanOfferDto createOffer(LoanStatementRequestDto request,
                                      boolean isInsuranceEnabled,
                                      boolean isSalaryClient) {
-
-        log.debug("Creating offer. insuranceEnabled={}, salaryClient={}",
-                isInsuranceEnabled, isSalaryClient);
-
         BigDecimal rate = rateCalculator
-                .calculatePrescoringRate(
-                isInsuranceEnabled,
-                isSalaryClient)
-                .setScale(RATE_SCALE, ROUNDING_MODE);
-
-        log.debug("Calculated rate={}", rate);
+                .calculatePrescoringRate(isInsuranceEnabled, isSalaryClient)
+                .setScale(FINAL_SCALE, ROUNDING_MODE);
 
         BigDecimal totalAmount = request.getAmount();
 
         if (isInsuranceEnabled) {
             BigDecimal insuranceCost = totalAmount
                     .multiply(insuranceProperties.getInsuranceCostRate())
-                    .setScale(AMOUNT_SCALE, ROUNDING_MODE);
+                    .setScale(FINAL_SCALE, ROUNDING_MODE);
 
             log.debug("Insurance cost calculated={}", insuranceCost);
 
@@ -85,9 +68,7 @@ public class OfferService {
                 request.getTerm()
         );
 
-        log.debug("Monthly payment calculated={}", monthlyPayment);
-
-        LoanOfferDto offer = LoanOfferDto.builder()
+        return LoanOfferDto.builder()
                 .statementId(UUID.randomUUID())
                 .requestedAmount(request.getAmount())
                 .totalAmount(totalAmount)
@@ -97,9 +78,5 @@ public class OfferService {
                 .isInsuranceEnabled(isInsuranceEnabled)
                 .isSalaryClient(isSalaryClient)
                 .build();
-
-        log.debug("Offer created={}", offer);
-
-        return offer;
     }
 }

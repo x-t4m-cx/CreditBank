@@ -1,11 +1,13 @@
 package com.creditbank.calculator.config.property;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
-@Data
+@Getter
+@Setter
 @Component
 @ConfigurationProperties(prefix = "calculator.scoring")
 public class ScoringProperties {
@@ -31,4 +33,11 @@ public class ScoringProperties {
     private Integer womanMaxAge = 60;
     private Integer manMinAge = 30;
     private Integer manMaxAge = 55;
+    private Integer minAge = 20;
+    private Integer maxAge = 65;
+
+    // Ограничения
+    private Integer minTotalExperience = 18;
+    private Integer minCurrentExperience = 3;
+    private BigDecimal maxSalaryMultiplier = new BigDecimal("24");
 }

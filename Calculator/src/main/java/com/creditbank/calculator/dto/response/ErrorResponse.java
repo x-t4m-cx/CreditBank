@@ -2,11 +2,12 @@ package com.creditbank.calculator.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 import java.util.Map;
 
-@Data
+@Getter
 @Builder
 @Schema(name = "ErrorResponse", description = "Standard error response body")
 public class ErrorResponse {

@@ -1,5 +1,6 @@
 package com.creditbank.calculator.service;
 
+import com.creditbank.calculator.config.property.ScoringProperties;
 import com.creditbank.calculator.dto.request.EmploymentDto;
 import com.creditbank.calculator.dto.request.ScoringDataDto;
 import com.creditbank.calculator.dto.response.CreditDto;
@@ -11,11 +12,14 @@ import com.creditbank.calculator.enums.Position;
 import com.creditbank.calculator.exception.ScoringException;
 import com.creditbank.calculator.service.calculation.PaymentCalculator;
 import com.creditbank.calculator.service.calculation.RateCalculator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,6 +34,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class CreditServiceTest {
 
     @Mock
@@ -38,8 +43,20 @@ class CreditServiceTest {
     @Mock
     private RateCalculator rateCalculator;
 
+    @Mock
+    private ScoringProperties scoringProperties;
+
     @InjectMocks
     private CreditService creditService;
+
+    @BeforeEach
+    void setUp() {
+        when(scoringProperties.getMinAge()).thenReturn(20);
+        when(scoringProperties.getMaxAge()).thenReturn(65);
+        when(scoringProperties.getMinTotalExperience()).thenReturn(18);
+        when(scoringProperties.getMinCurrentExperience()).thenReturn(3);
+        when(scoringProperties.getMaxSalaryMultiplier()).thenReturn(new BigDecimal(24));
+    }
 
     @Test
     void shouldReturnCreditDtoWhenInputIsValid() {
@@ -83,7 +100,9 @@ class CreditServiceTest {
                         .build())
                 .build();
 
-        assertThrows(ScoringException.class, () -> creditService.calculateCredit(dto));
+        ScoringException exception = assertThrows(ScoringException.class,
+                () -> creditService.calculateCredit(dto));
+        assertEquals("Rejection due to: work status - Unemployed", exception.getMessage());
     }
 
     @Test
@@ -92,7 +111,10 @@ class CreditServiceTest {
                 .amount(new BigDecimal("2400001")) // salary=100000 => max=2400000
                 .build();
 
-        assertThrows(ScoringException.class, () -> creditService.calculateCredit(dto));
+        ScoringException exception = assertThrows(ScoringException.class,
+                () -> creditService.calculateCredit(dto));
+        assertEquals("Rejection due to: The loan amount is more than 24 salaries Loan amount = 2400001 max allowed = 2400000",
+                exception.getMessage());
     }
 
     @Test
@@ -101,13 +123,19 @@ class CreditServiceTest {
                 .birthdate(LocalDate.now().minusYears(19))
                 .build();
 
-        assertThrows(ScoringException.class, () -> creditService.calculateCredit(tooYoung));
+        ScoringException exceptionYoung = assertThrows(ScoringException.class,
+                () -> creditService.calculateCredit(tooYoung));
+        assertEquals("Rejection due to: age less than 20 or more than 65 years old;the received age = 19",
+                exceptionYoung.getMessage());
 
         ScoringDataDto tooOld = validScoringData()
                 .birthdate(LocalDate.now().minusYears(66))
                 .build();
 
-        assertThrows(ScoringException.class, () -> creditService.calculateCredit(tooOld));
+        ScoringException exceptionOld = assertThrows(ScoringException.class,
+                () -> creditService.calculateCredit(tooOld));
+        assertEquals("Rejection due to: age less than 20 or more than 65 years old;the received age = 66",
+                exceptionOld.getMessage());
     }
 
     @Test
@@ -117,13 +145,16 @@ class CreditServiceTest {
                         .employmentStatus(EmploymentStatus.EMPLOYED)
                         .position(Position.WORKER)
                         .salary(new BigDecimal("100000"))
-                        .workExperienceTotal(17)
-                        .workExperienceCurrent(2)
+                        .workExperienceTotal(17)  // Меньше 18
+                        .workExperienceCurrent(2)  // Меньше 3
                         .employerINN("7707083893")
                         .build())
                 .build();
 
-        assertThrows(ScoringException.class, () -> creditService.calculateCredit(dto));
+        ScoringException exception = assertThrows(ScoringException.class,
+                () -> creditService.calculateCredit(dto));
+        assertEquals("Rejection due to: Total work experience less than 18 months " +
+                "or current work experience less than 3 months", exception.getMessage());
     }
 
     @Test
@@ -134,6 +165,7 @@ class CreditServiceTest {
 
         BigDecimal finalRate = new BigDecimal("12.00");
         BigDecimal monthlyPayment = new BigDecimal("100000.00");
+
         when(rateCalculator.calculateScoringRate(eq(dto))).thenReturn(finalRate);
         when(paymentCalculator.calculateMonthlyPayment(eq(dto.getAmount()), eq(finalRate), eq(dto.getTerm())))
                 .thenReturn(monthlyPayment);
@@ -183,13 +215,16 @@ class CreditServiceTest {
                         .employmentStatus(EmploymentStatus.EMPLOYED)
                         .position(Position.WORKER)
                         .salary(new BigDecimal("100000"))
-                        .workExperienceTotal(17)
-                        .workExperienceCurrent(24)
+                        .workExperienceTotal(17)  // Меньше 18
+                        .workExperienceCurrent(24)  // Норма
                         .employerINN("7707083893")
                         .build())
                 .build();
 
-        assertThrows(ScoringException.class, () -> creditService.calculateCredit(dto));
+        ScoringException exception = assertThrows(ScoringException.class,
+                () -> creditService.calculateCredit(dto));
+        assertEquals("Rejection due to: Total work experience less than 18 months " +
+                "or current work experience less than 3 months", exception.getMessage());
     }
 
     @Test
@@ -199,13 +234,16 @@ class CreditServiceTest {
                         .employmentStatus(EmploymentStatus.EMPLOYED)
                         .position(Position.WORKER)
                         .salary(new BigDecimal("100000"))
-                        .workExperienceTotal(120)
-                        .workExperienceCurrent(2)
+                        .workExperienceTotal(120)  // Норма
+                        .workExperienceCurrent(2)  // Меньше 3
                         .employerINN("7707083893")
                         .build())
                 .build();
 
-        assertThrows(ScoringException.class, () -> creditService.calculateCredit(dto));
+        ScoringException exception = assertThrows(ScoringException.class,
+                () -> creditService.calculateCredit(dto));
+        assertEquals("Rejection due to: Total work experience less than 18 months " +
+                "or current work experience less than 3 months", exception.getMessage());
     }
 
     private static ScoringDataDto.ScoringDataDtoBuilder validScoringData() {
@@ -236,4 +274,3 @@ class CreditServiceTest {
                 .isSalaryClient(false);
     }
 }
-

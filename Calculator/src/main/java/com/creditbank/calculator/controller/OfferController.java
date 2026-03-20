@@ -95,9 +95,9 @@ public class OfferController {
                     )
             )
     })
-    public ResponseEntity<List<LoanOfferDto>> generateOffers(@Valid @RequestBody LoanStatementRequestDto loanStatementRequestDto){
-        List<LoanOfferDto> offers = offerService
-                .generateOffers(loanStatementRequestDto);
-        return ResponseEntity.ok(offers);
+    public ResponseEntity<List<LoanOfferDto>> generateOffers(@Valid @RequestBody LoanStatementRequestDto loanStatementRequestDto) {
+        return ResponseEntity.ok(
+                offerService.generateOffers(loanStatementRequestDto)
+        );
     }
 }

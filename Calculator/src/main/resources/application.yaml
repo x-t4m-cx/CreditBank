@@ -38,3 +38,8 @@ calculator:
     man-min-age: 30
     man-max-age: 55
     non-binary-increase: 7
+    min-age: 20
+    max-age: 65
+    min-total-experience: 18
+    min-current-experience: 3
+    max-salary-multiplier: 24
