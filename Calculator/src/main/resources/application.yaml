@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: calculator
+
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+  default-produces-media-type: application/json
+
+logging:
+  level:
+    root: INFO
+    com.creditbank.calculator: DEBUG
+server:
+  port: 8080
+
+calculator:
+  insurance:
+    insurance-cost-rate: 0.10
+  scoring:
+    base-rate: 20.0
+    insurance-decrease: 3.0
+    salary-client-decrease: 1.0
+    self-employed-increase: 2
+    business-owner-increase: 1
+    mid-manager-decrease: 2
+    top-manager-decrease: 3
+    married-decrease: 3
+    divorced-increase: 1
+    woman-age-decrease: 3
+    woman-min-age: 32
+    woman-max-age: 60
+    man-age-decrease: 3
+    man-min-age: 30
+    man-max-age: 55
+    non-binary-increase: 7
+    min-age: 20
+    max-age: 65
+    min-total-experience: 18
+    min-current-experience: 3
+    max-salary-multiplier: 24
