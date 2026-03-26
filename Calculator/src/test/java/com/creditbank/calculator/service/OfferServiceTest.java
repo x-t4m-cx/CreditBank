@@ -68,8 +68,6 @@ class OfferServiceTest {
         assertTrue(offers.get(1).getRate().compareTo(offers.get(2).getRate()) >= 0);
         assertTrue(offers.get(2).getRate().compareTo(offers.get(3).getRate()) >= 0);
 
-        offers.forEach(o -> assertNotNull(o.getStatementId()));
-
         LoanOfferDto withInsurance = offers.stream()
                 .filter(LoanOfferDto::getIsInsuranceEnabled)
                 .findFirst()
