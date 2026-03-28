@@ -1,6 +1,18 @@
 package com.creditbank.deal.jsonb;
 
-// Serializable
+import com.creditbank.deal.enums.ChangeType;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@Builder
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class StatusHistory {
-    //TODO прописать поля
+    private String status;
+    private LocalDateTime time;
+    private ChangeType changeType;
 }

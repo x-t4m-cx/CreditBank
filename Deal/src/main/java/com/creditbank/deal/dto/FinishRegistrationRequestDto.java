@@ -1,4 +1,4 @@
-package com.creditbank.deal.dto.request;
+package com.creditbank.deal.dto;
 
 import com.creditbank.deal.enums.Gender;
 import com.creditbank.deal.enums.MaritalStatus;
@@ -11,7 +11,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"passportIssueDate", "passportIssueBranch"})
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

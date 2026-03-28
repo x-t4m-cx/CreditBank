@@ -1,4 +1,4 @@
-package com.creditbank.deal.dto.request;
+package com.creditbank.deal.dto;
 
 import com.creditbank.deal.validation.annotation.Adult;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"passportSeries", "passportNumber"})
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

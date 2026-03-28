@@ -5,10 +5,7 @@ import com.creditbank.deal.enums.MaritalStatus;
 import com.creditbank.deal.jsonb.Employment;
 import com.creditbank.deal.jsonb.Passport;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -18,9 +15,11 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@Table(name = "client")
+@ToString(exclude = {"statement", "passport"})
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "client")
 public class Client {
 
     @Id
@@ -55,7 +54,7 @@ public class Client {
     private Integer dependentAmount;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "passport", columnDefinition = "jsonb")
+    @Column(name = "passport", columnDefinition = "jsonb", nullable = false)
     private Passport passport;
 
     @JdbcTypeCode(SqlTypes.JSON)

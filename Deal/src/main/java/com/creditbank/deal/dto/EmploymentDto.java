@@ -1,4 +1,4 @@
-package com.creditbank.deal.dto.request;
+package com.creditbank.deal.dto;
 
 import com.creditbank.deal.enums.EmploymentPosition;
 import com.creditbank.deal.enums.EmploymentStatus;

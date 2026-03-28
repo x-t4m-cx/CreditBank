@@ -1,4 +1,4 @@
-package com.creditbank.deal.dto.response;
+package com.creditbank.deal.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter
+@Setter
 @ToString
 @Builder
 @NoArgsConstructor

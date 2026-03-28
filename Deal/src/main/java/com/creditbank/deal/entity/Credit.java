@@ -3,8 +3,7 @@ package com.creditbank.deal.entity;
 import com.creditbank.deal.enums.CreditStatus;
 import com.creditbank.deal.model.PaymentScheduleElement;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -15,6 +14,10 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
+@ToString(exclude = "statement")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "credit")
 public class Credit {
 

@@ -1,6 +1,6 @@
 package com.creditbank.deal.mapper;
 
-import com.creditbank.deal.dto.response.PaymentScheduleElementDto;
+import com.creditbank.deal.dto.PaymentScheduleElementDto;
 import com.creditbank.deal.model.PaymentScheduleElement;
 import org.mapstruct.Mapper;
 
