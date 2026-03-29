@@ -25,10 +25,26 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: OFF
 
 calculator:
-  base-url: ${CALCULATOR_URL}
+  url: ${CALCULATOR_URL}
 
 springdoc:
   api-docs:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+  server:
+    port: 8081

@@ -16,9 +16,6 @@ import java.util.List;
 public class CalculatorClient {
     private final RestClient restClient;
 
-    // TODO: @ExceptionHandler(HttpClientErrorException.BadRequest.class) <-- Так обработаем badRequest
-    //       @ExceptionHandler(HttpServerErrorException.InternalServerError.class) <-- InternalServerError
-
     public List<LoanOfferDto> generateOffers(LoanStatementRequestDto request) {
         return restClient.post()
                 .uri("/calculator/offers")
@@ -36,5 +33,4 @@ public class CalculatorClient {
                 .body(new ParameterizedTypeReference<>() {
                 });
     }
-
 }

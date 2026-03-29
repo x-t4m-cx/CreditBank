@@ -3,11 +3,13 @@ package com.creditbank.deal.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
 @Getter
+@Setter
 @Builder
 @Schema(name = "ErrorResponse", description = "Standard error response body")
 public class ErrorResponse {
