@@ -48,6 +48,7 @@
 
 - Java 21
 - Spring Boot 3.5.11
+- Spring Boot Actuator
 - PostgreSQL
 - Spring Data JPA
 - JUnit / Mockito

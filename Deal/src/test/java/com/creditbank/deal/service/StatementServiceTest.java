@@ -5,6 +5,9 @@ import com.creditbank.deal.entity.Client;
 import com.creditbank.deal.entity.Statement;
 import com.creditbank.deal.enums.ApplicationStatus;
 import com.creditbank.deal.enums.ChangeType;
+import com.creditbank.deal.jsonb.StatusHistory;
+import com.creditbank.deal.mapper.StatementMapper;
+import com.creditbank.deal.mapper.StatusHistoryMapper;
 import com.creditbank.deal.repository.StatementRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -30,6 +33,10 @@ class StatementServiceTest {
     private ClientService clientService;
     @Mock
     private StatementRepository repository;
+    @Mock
+    private StatementMapper statementMapper;
+    @Mock
+    private StatusHistoryMapper statusHistoryMapper;
     @InjectMocks
     private StatementService service;
 
@@ -45,22 +52,35 @@ class StatementServiceTest {
         client.setClientId(UUID.randomUUID());
         when(clientService.createClient(any(LoanStatementRequestDto.class))).thenReturn(client);
 
-        Statement savedStatement = Statement.builder()
+        Statement statementFromMapper = Statement.builder()
                 .statementId(UUID.randomUUID())
                 .client(client)
-                .status(ApplicationStatus.PREAPPROVAL)
                 .creationDate(LocalDateTime.now())
                 .statusHistory(new ArrayList<>())
                 .build();
 
-        when(repository.save(any(Statement.class))).thenReturn(savedStatement);
+        StatusHistory history = StatusHistory.builder()
+                .status(ApplicationStatus.PREAPPROVAL.name())
+                .time(LocalDateTime.now())
+                .changeType(ChangeType.AUTOMATIC)
+                .build();
+
+        when(statementMapper.toEntity(client)).thenReturn(statementFromMapper);
+        when(statusHistoryMapper.toEntity(ApplicationStatus.PREAPPROVAL, ChangeType.AUTOMATIC))
+                .thenReturn(history);
+
+        when(repository.save(any(Statement.class))).thenReturn(statementFromMapper);
 
         Statement result = service.createStatement(request);
         assertNotNull(result);
         assertNotNull(result.getStatementId());
         assertEquals(client, result.getClient());
         assertEquals(ApplicationStatus.PREAPPROVAL, result.getStatus());
+        assertEquals(1, result.getStatusHistory().size());
+        assertEquals(history.getStatus(), result.getStatusHistory().getFirst().getStatus());
         verify(repository).save(any(Statement.class));
+        verify(statementMapper).toEntity(client);
+        verify(statusHistoryMapper).toEntity(ApplicationStatus.PREAPPROVAL, ChangeType.AUTOMATIC);
     }
 
     @Test
@@ -92,11 +112,20 @@ class StatementServiceTest {
         ApplicationStatus status = ApplicationStatus.APPROVED;
         ChangeType changeType = ChangeType.MANUAL;
 
+        StatusHistory history = StatusHistory.builder()
+                .status(status.name())
+                .time(LocalDateTime.now())
+                .changeType(changeType)
+                .build();
+
+        when(statusHistoryMapper.toEntity(status, changeType)).thenReturn(history);
+
         service.setStatus(statement, status, changeType);
         assertEquals(status, statement.getStatus());
         assertEquals(1, statement.getStatusHistory().size());
-        assertEquals(status.name(), statement.getStatusHistory().getFirst().getStatus());
-        assertEquals(changeType, statement.getStatusHistory().getFirst().getChangeType());
+        assertEquals(history.getStatus(), statement.getStatusHistory().getFirst().getStatus());
+        assertEquals(history.getChangeType(), statement.getStatusHistory().getFirst().getChangeType());
+        verify(statusHistoryMapper).toEntity(status, changeType);
 
     }
 

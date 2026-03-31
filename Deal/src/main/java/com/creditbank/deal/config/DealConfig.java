@@ -32,7 +32,7 @@ public class DealConfig {
     }
 
     @Bean
-    public OpenAPI dealrOpenApi() {
+    public OpenAPI dealOpenApi() {
         return new OpenAPI()
                 .info(new Info()
                         .title("MC Deal")

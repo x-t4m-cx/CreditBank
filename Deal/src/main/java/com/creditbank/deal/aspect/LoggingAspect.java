@@ -14,8 +14,8 @@ import java.util.Arrays;
 @Aspect
 @Component
 public class LoggingAspect {
-    
-    @Pointcut("execution(public * com.creditbank.deal.controller.*.*(..))")
+
+    @Pointcut("execution(public * com.creditbank.deal.service.*..*(..))")
     public void allControllerPublicMethods() {
     }
 

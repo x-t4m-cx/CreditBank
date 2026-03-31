@@ -9,12 +9,11 @@ import com.creditbank.deal.enums.ApplicationStatus;
 import com.creditbank.deal.enums.ChangeType;
 import com.creditbank.deal.enums.CreditStatus;
 import com.creditbank.deal.exception.DeniedException;
-import com.creditbank.deal.jsonb.Passport;
 import com.creditbank.deal.mapper.CreditMapper;
 import com.creditbank.deal.mapper.EmploymentMapper;
+import com.creditbank.deal.mapper.ScoringDataMapper;
 import com.creditbank.deal.model.LoanOffer;
 import com.creditbank.deal.repository.CreditRepository;
-import io.micrometer.core.instrument.Counter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -35,8 +34,8 @@ public class CreditService {
 
     private final EmploymentMapper empMapper;
     private final CreditMapper creditMapper;
+    private final ScoringDataMapper scoringDataMapper;
     private final CreditRepository repository;
-    private final Counter deniedCounter;
 
 
     public void calculateCredit(FinishRegistrationRequestDto request, String statementId) {
@@ -45,8 +44,8 @@ public class CreditService {
 
         LoanOffer offer = statement.getAppliedOffer();
         Client client = statement.getClient();
-
-        ScoringDataDto scoringData = saturateWithInfo(client, offer);
+        EmploymentDto empDto = empMapper.toDto(client.getEmployment());
+        ScoringDataDto scoringData = scoringDataMapper.toDto(client, offer, empDto);
 
         try {
             CreditDto creditDto = calculatorClient.calculateCredit(scoringData);
@@ -68,8 +67,6 @@ public class CreditService {
                 statementService.setStatus(statement, ApplicationStatus.CC_DENIED, ChangeType.AUTOMATIC);
                 statementService.updateStatement(statement);
 
-                deniedCounter.increment();
-
                 throw new DeniedException(deniedMessage);
 
             }
@@ -77,28 +74,4 @@ public class CreditService {
         }
     }
 
-
-    private ScoringDataDto saturateWithInfo(Client client, LoanOffer offer) {
-        Passport passport = client.getPassport();
-        EmploymentDto empDto = empMapper.toDto(client.getEmployment());
-        return ScoringDataDto.builder()
-                .amount(offer.getTotalAmount())
-                .term(offer.getTerm())
-                .firstName(client.getFirstName())
-                .lastName(client.getLastName())
-                .middleName(client.getMiddleName())
-                .gender(client.getGender())
-                .birthdate(client.getBirthDate())
-                .passportSeries(passport.getSeries())
-                .passportNumber(passport.getNumber())
-                .passportIssueDate(passport.getIssueDate())
-                .passportIssueBranch(passport.getIssueBranch())
-                .maritalStatus(client.getMaritalStatus())
-                .dependentAmount(client.getDependentAmount())
-                .employment(empDto)
-                .accountNumber(client.getAccountNumber())
-                .isInsuranceEnabled(offer.getInsuranceEnabled())
-                .isSalaryClient(offer.getSalaryClient())
-                .build();
-    }
 }
