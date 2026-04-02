@@ -1,20 +1,18 @@
 package com.creditbank.deal.service;
 
 import com.creditbank.deal.client.CalculatorClient;
-import com.creditbank.deal.dto.CreditDto;
-import com.creditbank.deal.dto.ErrorResponse;
-import com.creditbank.deal.dto.FinishRegistrationRequestDto;
-import com.creditbank.deal.dto.EmploymentDto;
-import com.creditbank.deal.dto.ScoringDataDto;
+import com.creditbank.deal.dto.calculator.response.CreditDto;
+import com.creditbank.deal.dto.response.ErrorResponse;
+import com.creditbank.deal.dto.request.FinishRegistrationRequestDto;
+import com.creditbank.deal.dto.calculator.request.ScoringDataDto;
 import com.creditbank.deal.entity.Client;
 import com.creditbank.deal.entity.Credit;
 import com.creditbank.deal.entity.Statement;
 import com.creditbank.deal.enums.*;
 import com.creditbank.deal.exception.DeniedException;
-import com.creditbank.deal.jsonb.Employment;
-import com.creditbank.deal.jsonb.Passport;
+import com.creditbank.deal.entity.jsonb.Employment;
+import com.creditbank.deal.entity.jsonb.Passport;
 import com.creditbank.deal.mapper.CreditMapper;
-import com.creditbank.deal.mapper.EmploymentMapper;
 import com.creditbank.deal.mapper.ScoringDataMapper;
 import com.creditbank.deal.model.LoanOffer;
 import com.creditbank.deal.repository.CreditRepository;
@@ -34,8 +32,6 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,8 +42,6 @@ class CreditServiceTest {
     private StatementService statementService;
     @Mock
     private ClientService clientService;
-    @Mock
-    private EmploymentMapper empMapper;
     @Mock
     private CreditMapper creditMapper;
     @Mock
@@ -86,8 +80,7 @@ class CreditServiceTest {
         Credit credit = new Credit();
         credit.setCreditStatus(CreditStatus.CALCULATED);
 
-        when(scoringDataMapper.toDto(eq(client), eq(offer), nullable(EmploymentDto.class)))
-                .thenReturn(scoringDataDto);
+        when(scoringDataMapper.toDto(statement)).thenReturn(scoringDataDto);
         when(statementService.getStatementById(UUID.fromString(id))).thenReturn(statement);
         doNothing().when(clientService).updateClient(any(Statement.class), any(FinishRegistrationRequestDto.class));
         when(calculatorClient.calculateCredit(scoringDataDto)).thenReturn(creditDto);
@@ -101,7 +94,7 @@ class CreditServiceTest {
         verify(statementService).setStatus(statement, ApplicationStatus.CC_APPROVED, ChangeType.AUTOMATIC);
         verify(statementService).updateStatement(statement);
         verify(repository).save(credit);
-        verify(scoringDataMapper).toDto(eq(client), eq(offer), nullable(EmploymentDto.class));
+        verify(scoringDataMapper).toDto(statement);
     }
 
     @Test
@@ -146,8 +139,7 @@ class CreditServiceTest {
         statement.setAppliedOffer(offer);
 
         ScoringDataDto scoringDataDto = new ScoringDataDto();
-        when(scoringDataMapper.toDto(any(Client.class), eq(offer), nullable(EmploymentDto.class)))
-                .thenReturn(scoringDataDto);
+        when(scoringDataMapper.toDto(statement)).thenReturn(scoringDataDto);
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .error("Denied error")
@@ -211,8 +203,7 @@ class CreditServiceTest {
         statement.setAppliedOffer(offer);
 
         ScoringDataDto scoringDataDto = new ScoringDataDto();
-        when(scoringDataMapper.toDto(any(Client.class), eq(offer), nullable(EmploymentDto.class)))
-                .thenReturn(scoringDataDto);
+        when(scoringDataMapper.toDto(statement)).thenReturn(scoringDataDto);
 
         HttpClientErrorException httpClientErrorException = mock(HttpClientErrorException.class);
         when(httpClientErrorException.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);

@@ -1,6 +1,6 @@
 package com.creditbank.deal.service;
 
-import com.creditbank.deal.dto.LoanStatementRequestDto;
+import com.creditbank.deal.dto.request.LoanStatementRequestDto;
 import com.creditbank.deal.entity.Client;
 import com.creditbank.deal.entity.Statement;
 import com.creditbank.deal.enums.ApplicationStatus;

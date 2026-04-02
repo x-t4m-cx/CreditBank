@@ -4,19 +4,14 @@ import com.creditbank.deal.entity.Client;
 import com.creditbank.deal.entity.Statement;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface StatementMapper {
 
-    @Mapping(target = "client", source = "client")
     @Mapping(target = "creationDate", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "statusHistory", expression = "java(new java.util.ArrayList<>())")
-    @Mapping(target = "statementId", ignore = true)
-    @Mapping(target = "credit", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "appliedOffer", ignore = true)
-    @Mapping(target = "signDate", ignore = true)
-    @Mapping(target = "sesCode", ignore = true)
     Statement toEntity(Client client);
 }
 

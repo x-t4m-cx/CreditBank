@@ -1,11 +1,11 @@
 package com.creditbank.deal.service;
 
-import com.creditbank.deal.dto.LoanStatementRequestDto;
+import com.creditbank.deal.dto.request.LoanStatementRequestDto;
 import com.creditbank.deal.entity.Client;
 import com.creditbank.deal.entity.Statement;
 import com.creditbank.deal.enums.ApplicationStatus;
 import com.creditbank.deal.enums.ChangeType;
-import com.creditbank.deal.jsonb.StatusHistory;
+import com.creditbank.deal.entity.jsonb.StatusHistory;
 import com.creditbank.deal.mapper.StatementMapper;
 import com.creditbank.deal.mapper.StatusHistoryMapper;
 import com.creditbank.deal.repository.StatementRepository;

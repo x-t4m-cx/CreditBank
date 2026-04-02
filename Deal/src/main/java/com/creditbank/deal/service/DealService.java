@@ -1,8 +1,8 @@
 package com.creditbank.deal.service;
 
-import com.creditbank.deal.dto.FinishRegistrationRequestDto;
-import com.creditbank.deal.dto.LoanOfferDto;
-import com.creditbank.deal.dto.LoanStatementRequestDto;
+import com.creditbank.deal.dto.request.FinishRegistrationRequestDto;
+import com.creditbank.deal.dto.response.LoanOfferDto;
+import com.creditbank.deal.dto.request.LoanStatementRequestDto;
 import com.creditbank.deal.entity.Statement;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
 package com.creditbank.deal.entity;
 
 import com.creditbank.deal.enums.ApplicationStatus;
-import com.creditbank.deal.jsonb.StatusHistory;
+import com.creditbank.deal.entity.jsonb.StatusHistory;
 import com.creditbank.deal.model.LoanOffer;
 import jakarta.persistence.*;
 import lombok.*;

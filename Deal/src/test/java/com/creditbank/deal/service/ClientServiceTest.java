@@ -1,17 +1,15 @@
 package com.creditbank.deal.service;
 
-import com.creditbank.deal.dto.EmploymentDto;
-import com.creditbank.deal.dto.FinishRegistrationRequestDto;
-import com.creditbank.deal.dto.LoanStatementRequestDto;
+import com.creditbank.deal.dto.request.EmploymentDto;
+import com.creditbank.deal.dto.request.FinishRegistrationRequestDto;
+import com.creditbank.deal.dto.request.LoanStatementRequestDto;
 import com.creditbank.deal.entity.Client;
 import com.creditbank.deal.entity.Statement;
 import com.creditbank.deal.enums.Gender;
 import com.creditbank.deal.enums.MaritalStatus;
-import com.creditbank.deal.jsonb.Employment;
-import com.creditbank.deal.jsonb.Passport;
+import com.creditbank.deal.entity.jsonb.Employment;
+import com.creditbank.deal.entity.jsonb.Passport;
 import com.creditbank.deal.mapper.ClientMapper;
-import com.creditbank.deal.mapper.EmploymentMapper;
-import com.creditbank.deal.mapper.PassportMapper;
 import com.creditbank.deal.repository.ClientRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,11 +29,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ClientServiceTest {
-
-    @Mock
-    private EmploymentMapper empMapper;
-    @Mock
-    private PassportMapper passportMapper;
     @Mock
     private ClientMapper clientMapper;
     @Mock
@@ -56,17 +49,16 @@ class ClientServiceTest {
                 .email("ivanov@mail.ru")
                 .build();
 
-        Passport passport = Passport.builder()
-                .series(request.getPassportSeries())
-                .number(request.getPassportNumber())
-                .build();
-
         Client client = Client.builder()
                 .lastName(request.getLastName())
                 .firstName(request.getFirstName())
                 .middleName(request.getMiddleName())
                 .birthDate(request.getBirthdate())
                 .email(request.getEmail())
+                .passport(Passport.builder()
+                        .series(request.getPassportSeries())
+                        .number(request.getPassportNumber())
+                        .build())
                 .build();
 
         UUID clientId = UUID.randomUUID();
@@ -78,10 +70,9 @@ class ClientServiceTest {
                 .middleName(request.getMiddleName())
                 .birthDate(request.getBirthdate())
                 .email(request.getEmail())
-                .passport(passport)
+                .passport(client.getPassport())
                 .build();
 
-        when(passportMapper.toModel(request)).thenReturn(passport);
         when(clientMapper.toEntity(request)).thenReturn(client);
         when(repository.save(any(Client.class))).thenReturn(savedClient);
 
@@ -91,7 +82,6 @@ class ClientServiceTest {
         assertEquals(clientId, result.getClientId());
         assertEquals(request.getLastName(), result.getLastName());
 
-        verify(passportMapper).toModel(request);
         verify(clientMapper).toEntity(request);
         verify(repository).save(any(Client.class));
     }
@@ -128,7 +118,6 @@ class ClientServiceTest {
 
         service.updateClient(statement, request);
 
-        verify(passportMapper).updateModel(existClient.getPassport(), request);
         verify(clientMapper).updateEntity(existClient, request);
 
         assertEquals("GY MVD RUSSIA", existClient.getPassport().getIssueBranch());

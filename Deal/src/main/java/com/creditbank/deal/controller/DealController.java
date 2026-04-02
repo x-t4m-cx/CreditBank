@@ -1,9 +1,9 @@
 package com.creditbank.deal.controller;
 
-import com.creditbank.deal.dto.ErrorResponse;
-import com.creditbank.deal.dto.FinishRegistrationRequestDto;
-import com.creditbank.deal.dto.LoanOfferDto;
-import com.creditbank.deal.dto.LoanStatementRequestDto;
+import com.creditbank.deal.dto.response.ErrorResponse;
+import com.creditbank.deal.dto.request.FinishRegistrationRequestDto;
+import com.creditbank.deal.dto.response.LoanOfferDto;
+import com.creditbank.deal.dto.request.LoanStatementRequestDto;
 import com.creditbank.deal.service.DealService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

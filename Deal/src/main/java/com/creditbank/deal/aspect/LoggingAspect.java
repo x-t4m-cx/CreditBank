@@ -16,10 +16,10 @@ import java.util.Arrays;
 public class LoggingAspect {
 
     @Pointcut("execution(public * com.creditbank.deal.service.*..*(..))")
-    public void allControllerPublicMethods() {
+    public void allServicePublicMethods() {
     }
 
-    @Around("allControllerPublicMethods()")
+    @Around("allServicePublicMethods()")
     public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
         String methodName = joinPoint.getSignature().getName();
         Object[] args = joinPoint.getArgs();

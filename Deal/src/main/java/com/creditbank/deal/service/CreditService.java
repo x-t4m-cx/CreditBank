@@ -1,8 +1,10 @@
 package com.creditbank.deal.service;
 
 import com.creditbank.deal.client.CalculatorClient;
-import com.creditbank.deal.dto.*;
-import com.creditbank.deal.entity.Client;
+import com.creditbank.deal.dto.calculator.request.ScoringDataDto;
+import com.creditbank.deal.dto.calculator.response.CreditDto;
+import com.creditbank.deal.dto.request.FinishRegistrationRequestDto;
+import com.creditbank.deal.dto.response.ErrorResponse;
 import com.creditbank.deal.entity.Credit;
 import com.creditbank.deal.entity.Statement;
 import com.creditbank.deal.enums.ApplicationStatus;
@@ -10,9 +12,7 @@ import com.creditbank.deal.enums.ChangeType;
 import com.creditbank.deal.enums.CreditStatus;
 import com.creditbank.deal.exception.DeniedException;
 import com.creditbank.deal.mapper.CreditMapper;
-import com.creditbank.deal.mapper.EmploymentMapper;
 import com.creditbank.deal.mapper.ScoringDataMapper;
-import com.creditbank.deal.model.LoanOffer;
 import com.creditbank.deal.repository.CreditRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,6 @@ public class CreditService {
     private final StatementService statementService;
     private final ClientService clientService;
 
-    private final EmploymentMapper empMapper;
     private final CreditMapper creditMapper;
     private final ScoringDataMapper scoringDataMapper;
     private final CreditRepository repository;
@@ -42,10 +41,7 @@ public class CreditService {
         Statement statement = statementService.getStatementById(UUID.fromString(statementId));
         clientService.updateClient(statement, request);
 
-        LoanOffer offer = statement.getAppliedOffer();
-        Client client = statement.getClient();
-        EmploymentDto empDto = empMapper.toDto(client.getEmployment());
-        ScoringDataDto scoringData = scoringDataMapper.toDto(client, offer, empDto);
+        ScoringDataDto scoringData = scoringDataMapper.toDto(statement);
 
         try {
             CreditDto creditDto = calculatorClient.calculateCredit(scoringData);

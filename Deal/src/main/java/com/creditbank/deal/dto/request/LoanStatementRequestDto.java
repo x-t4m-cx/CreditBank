@@ -1,4 +1,4 @@
-package com.creditbank.deal.dto;
+package com.creditbank.deal.dto.request;
 
 import com.creditbank.deal.validation.annotation.Adult;
 import io.swagger.v3.oas.annotations.media.Schema;

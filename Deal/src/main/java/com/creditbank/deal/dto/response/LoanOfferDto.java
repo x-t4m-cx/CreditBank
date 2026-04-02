@@ -1,4 +1,4 @@
-package com.creditbank.deal.dto;
+package com.creditbank.deal.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;

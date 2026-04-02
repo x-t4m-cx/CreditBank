@@ -1,6 +1,6 @@
 package com.creditbank.deal.handler;
 
-import com.creditbank.deal.dto.ErrorResponse;
+import com.creditbank.deal.dto.response.ErrorResponse;
 import com.creditbank.deal.enums.Gender;
 import com.creditbank.deal.exception.DeniedException;
 import com.fasterxml.jackson.core.JsonParseException;

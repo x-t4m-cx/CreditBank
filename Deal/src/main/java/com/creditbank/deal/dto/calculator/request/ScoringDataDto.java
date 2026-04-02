@@ -1,5 +1,6 @@
-package com.creditbank.deal.dto;
+package com.creditbank.deal.dto.calculator.request;
 
+import com.creditbank.deal.dto.request.EmploymentDto;
 import com.creditbank.deal.enums.Gender;
 import com.creditbank.deal.enums.MaritalStatus;
 import lombok.*;

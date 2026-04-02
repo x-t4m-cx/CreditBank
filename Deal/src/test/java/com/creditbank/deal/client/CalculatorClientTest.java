@@ -1,9 +1,9 @@
 package com.creditbank.deal.client;
 
-import com.creditbank.deal.dto.CreditDto;
-import com.creditbank.deal.dto.LoanOfferDto;
-import com.creditbank.deal.dto.LoanStatementRequestDto;
-import com.creditbank.deal.dto.ScoringDataDto;
+import com.creditbank.deal.dto.calculator.response.CreditDto;
+import com.creditbank.deal.dto.response.LoanOfferDto;
+import com.creditbank.deal.dto.request.LoanStatementRequestDto;
+import com.creditbank.deal.dto.calculator.request.ScoringDataDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;

@@ -2,8 +2,8 @@ package com.creditbank.deal.entity;
 
 import com.creditbank.deal.enums.Gender;
 import com.creditbank.deal.enums.MaritalStatus;
-import com.creditbank.deal.jsonb.Employment;
-import com.creditbank.deal.jsonb.Passport;
+import com.creditbank.deal.entity.jsonb.Employment;
+import com.creditbank.deal.entity.jsonb.Passport;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;

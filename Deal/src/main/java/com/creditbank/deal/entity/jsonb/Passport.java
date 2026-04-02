@@ -1,4 +1,4 @@
-package com.creditbank.deal.jsonb;
+package com.creditbank.deal.entity.jsonb;
 
 
 import lombok.*;

@@ -1,8 +1,8 @@
 package com.creditbank.deal.controller;
 
-import com.creditbank.deal.dto.FinishRegistrationRequestDto;
-import com.creditbank.deal.dto.LoanOfferDto;
-import com.creditbank.deal.dto.LoanStatementRequestDto;
+import com.creditbank.deal.dto.request.FinishRegistrationRequestDto;
+import com.creditbank.deal.dto.response.LoanOfferDto;
+import com.creditbank.deal.dto.request.LoanStatementRequestDto;
 import com.creditbank.deal.service.DealService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

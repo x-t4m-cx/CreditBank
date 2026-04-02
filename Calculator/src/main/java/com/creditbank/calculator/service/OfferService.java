@@ -69,7 +69,6 @@ public class OfferService {
         );
 
         return LoanOfferDto.builder()
-                .statementId(null)
                 .requestedAmount(request.getAmount())
                 .totalAmount(totalAmount)
                 .term(request.getTerm())

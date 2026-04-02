@@ -1,9 +1,9 @@
 package com.creditbank.deal.client;
 
-import com.creditbank.deal.dto.CreditDto;
-import com.creditbank.deal.dto.LoanOfferDto;
-import com.creditbank.deal.dto.LoanStatementRequestDto;
-import com.creditbank.deal.dto.ScoringDataDto;
+import com.creditbank.deal.dto.calculator.response.CreditDto;
+import com.creditbank.deal.dto.response.LoanOfferDto;
+import com.creditbank.deal.dto.request.LoanStatementRequestDto;
+import com.creditbank.deal.dto.calculator.request.ScoringDataDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
