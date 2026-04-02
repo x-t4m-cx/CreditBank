@@ -69,7 +69,6 @@ public class OfferService {
         );
 
         return LoanOfferDto.builder()
-                .statementId(UUID.randomUUID())
                 .requestedAmount(request.getAmount())
                 .totalAmount(totalAmount)
                 .term(request.getTerm())
