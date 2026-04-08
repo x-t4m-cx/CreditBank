@@ -26,6 +26,22 @@ services:
     networks:
       - internal
 
+  statement:
+    build:
+      context: ./Statement
+      dockerfile: Dockerfile
+    container_name: statement-service
+    depends_on:
+      deal:
+        condition: service_started
+    ports:
+      - "8090:8080"
+    environment:
+      DEAL_URL: http://deal-service:8080
+    networks:
+      - internal
+      - external
+
   deal:
     build:
       context: ./Deal

@@ -17,26 +17,24 @@ import java.time.LocalDate;
 public class LoanStatementRequestDto {
 
     @NotNull(message = "Amount is required")
-    @DecimalMin(value = "20000.0", message = "Amount must be at least 20000")
-    @Schema(description = "Requested loan amount", example = "250000.00", minimum = "20000")
+    @Schema(description = "Requested loan amount", example = "250000.00")
     private BigDecimal amount;
 
     @NotNull(message = "Term is required")
-    @Min(value = 6, message = "Term must be at least 6 months")
-    @Schema(description = "Loan term in months", example = "24", minimum = "6")
+    @Schema(description = "Loan term in months", example = "24")
     private Integer term;
 
     @NotNull(message = "First name is required")
-    @Pattern(regexp = "^[a-zA-Z]{2,30}$", message = "First name must be 2-30 latin letters")
+    @Pattern(regexp = "^[a-zA-Z]+$", message = "First name must contain only latin letters")
     @Schema(example = "Ivan")
     private String firstName;
 
     @NotNull(message = "Last name is required")
-    @Pattern(regexp = "^[a-zA-Z]{2,30}$", message = "Last name must be 2-30 latin letters")
+    @Pattern(regexp = "^[a-zA-Z]+$", message = "First name must contain only latin letters")
     @Schema(example = "Petrov")
     private String lastName;
 
-    @Pattern(regexp = "^[a-zA-Z]{2,30}$", message = "Middle name must be 2-30 latin letters")
+    @Pattern(regexp = "^[a-zA-Z]+$", message = "First name must contain only latin letters")
     @Schema(example = "Sergeevich", nullable = true)
     private String middleName;
 
