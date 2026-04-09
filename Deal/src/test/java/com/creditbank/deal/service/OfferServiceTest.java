@@ -64,7 +64,7 @@ class OfferServiceTest {
         Statement statement = new Statement();
         statement.setStatementId(offer.getStatementId());
 
-        when(statementService.getStatementById(any(UUID.class))).thenReturn(statement);
+        when(statementService.getStatementByIdWithLock(any(UUID.class))).thenReturn(statement);
         when(mapper.toModel(any(LoanOfferDto.class))).thenReturn(new LoanOffer());
 
         service.applyOffer(offer);
