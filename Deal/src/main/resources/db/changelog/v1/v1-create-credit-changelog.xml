@@ -1,0 +1,48 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    <changeSet id="v1-2" author="Maksim Tabakov">
+        <createTable tableName="credit">
+            <column name="credit_id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="amount" type="DECIMAL">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="term" type="INT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="monthly_payment" type="DECIMAL">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="rate" type="DECIMAL">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="psk" type="DECIMAL">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="payment_schedule" type="JSONB"/>
+
+            <column name="insurance_enabled" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="salary_client" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="credit_status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

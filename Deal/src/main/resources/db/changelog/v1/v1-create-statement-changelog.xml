@@ -1,0 +1,41 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v1-3" author="Maksim Tabakov">
+        <createTable tableName="statement">
+            <column name="statement_id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="client_id" type="UUID">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="credit_id" type="UUID">
+                <constraints unique="true"/>
+            </column>
+
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="creation_date" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="applied_offer" type="JSONB"/>
+
+            <column name="sign_date" type="TIMESTAMP"/>
+
+            <column name="ses_code" type="VARCHAR(255)"/>
+
+            <column name="status_history" type="JSONB">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

@@ -1,6 +1,6 @@
-package com.creditbank.deal.validation.validator;
+package com.creditbank.statement.validation.validator;
 
-import com.creditbank.deal.validation.annotation.Adult;
+import com.creditbank.statement.validation.annotation.Adult;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

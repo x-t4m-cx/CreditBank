@@ -43,6 +43,14 @@ public class StatementService {
         return statement;
     }
 
+    public Statement getStatementByIdWithLock(UUID statementId) {
+        Statement statement = repository.findByIdWithLock(statementId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Statement not found with id: " + statementId));
+        log.debug("Statement locked and found - id: {}", statementId);
+        return statement;
+    }
+
     public void setStatus(Statement statement, ApplicationStatus status, ChangeType changeType) {
         statement.setStatus(status);
         var history = statusHistoryMapper.toEntity(status, changeType);
