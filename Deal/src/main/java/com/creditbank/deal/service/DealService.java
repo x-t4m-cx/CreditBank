@@ -9,28 +9,32 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class DealService {
+
     private final CreditService creditService;
     private final OfferService offerService;
     private final StatementService statementService;
+    private final DocumentService documentService;
 
     @Transactional
     public List<LoanOfferDto> createStatement(LoanStatementRequestDto request) {
         Statement statement = statementService.createStatement(request);
-
         return offerService.generateOffers(request, statement);
     }
 
     @Transactional
     public void applyOffer(LoanOfferDto offer) {
         offerService.applyOffer(offer);
+        documentService.sendFinishRegistrationRequest(offer.getStatementId());
     }
 
     @Transactional
     public void calculateCredit(FinishRegistrationRequestDto request, String statementId) {
         creditService.calculateCredit(request, statementId);
+        documentService.sendCreateDocumentRequest(UUID.fromString(statementId));
     }
 }

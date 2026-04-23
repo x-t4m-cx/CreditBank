@@ -5,9 +5,9 @@ spring:
   application:
     name: deal
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/deal_db}
+    username: ${DB_USERNAME:deal_user}
+    password: ${DB_PASSWORD:deal_password}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -17,8 +17,15 @@ spring:
       hibernate:
         format_sql: true
   liquibase:
-    change-log:
-      classpath:db/changelog/main-changelog.xml
+    change-log: classpath:db/changelog/main-changelog.xml
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+calculator:
+  url: ${CALCULATOR_URL:http://localhost:8081}
 
 logging:
   level:
@@ -26,9 +33,6 @@ logging:
     com.creditbank.deal: DEBUG
     org.hibernate.SQL: OFF
     org.hibernate.type.descriptor.sql.BasicBinder: OFF
-
-calculator:
-  url: ${CALCULATOR_URL}
 
 springdoc:
   api-docs:

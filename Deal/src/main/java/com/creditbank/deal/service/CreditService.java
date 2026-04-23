@@ -1,6 +1,6 @@
 package com.creditbank.deal.service;
 
-import com.creditbank.deal.client.CalculatorClient;
+import com.creditbank.deal.client.rest.CalculatorClient;
 import com.creditbank.deal.dto.calculator.request.ScoringDataDto;
 import com.creditbank.deal.dto.calculator.response.CreditDto;
 import com.creditbank.deal.dto.request.FinishRegistrationRequestDto;
@@ -27,15 +27,15 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class CreditService {
+
     private final CalculatorClient calculatorClient;
 
     private final StatementService statementService;
     private final ClientService clientService;
-
+    private final DocumentService documentService;
     private final CreditMapper creditMapper;
     private final ScoringDataMapper scoringDataMapper;
     private final CreditRepository repository;
-
 
     public void calculateCredit(FinishRegistrationRequestDto request, String statementId) {
         Statement statement = statementService.getStatementById(UUID.fromString(statementId));
@@ -54,6 +54,7 @@ public class CreditService {
             statement.setCredit(credit);
             statementService.setStatus(statement, ApplicationStatus.CC_APPROVED, ChangeType.AUTOMATIC);
             statementService.updateStatement(statement);
+            documentService.sendCreateDocumentRequest(UUID.fromString(statementId));
 
         } catch (HttpClientErrorException ex) {
             if (ex.getStatusCode() == HttpStatus.UNPROCESSABLE_ENTITY) {
@@ -62,6 +63,7 @@ public class CreditService {
                 log.debug("Credit denied - " + deniedMessage);
                 statementService.setStatus(statement, ApplicationStatus.CC_DENIED, ChangeType.AUTOMATIC);
                 statementService.updateStatement(statement);
+                documentService.sendCreditDenied(UUID.fromString(statementId));
 
                 throw new DeniedException(deniedMessage);
 

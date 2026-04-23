@@ -1,6 +1,6 @@
 package com.creditbank.deal.service;
 
-import com.creditbank.deal.client.CalculatorClient;
+import com.creditbank.deal.client.rest.CalculatorClient;
 import com.creditbank.deal.dto.request.LoanStatementRequestDto;
 import com.creditbank.deal.dto.response.LoanOfferDto;
 import com.creditbank.deal.entity.Statement;

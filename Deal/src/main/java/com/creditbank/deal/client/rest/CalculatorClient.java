@@ -1,4 +1,4 @@
-package com.creditbank.deal.client;
+package com.creditbank.deal.client.rest;
 
 import com.creditbank.deal.dto.calculator.response.CreditDto;
 import com.creditbank.deal.dto.response.LoanOfferDto;

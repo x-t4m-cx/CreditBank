@@ -6,9 +6,12 @@ import com.creditbank.deal.entity.Client;
 import com.creditbank.deal.entity.Statement;
 import com.creditbank.deal.mapper.ClientMapper;
 import com.creditbank.deal.repository.ClientRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -32,5 +35,12 @@ public class ClientService {
         Client updatedClient = repository.save(client);
         statement.setClient(updatedClient);
         log.debug("Client updated - id: {}", updatedClient.getClientId());
+    }
+
+    public Client getClientByStatementId(UUID statementId) {
+        return repository.findByStatementStatementId(statementId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Client not found with statementId:" + statementId
+                ));
     }
 }
