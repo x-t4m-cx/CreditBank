@@ -17,7 +17,7 @@ public class KafkaProducer {
     private final KafkaTemplate<String, EmailMessage> kafkaTemplate;
 
 
-    public void sendMessage(EmailMessage message, UUID key) {
-        kafkaTemplate.send(message.getTheme().getTopic(), key.toString(), message);
+    public void sendMessage(String topic, String key, EmailMessage message) {
+        kafkaTemplate.send(topic, key, message);
     }
 }

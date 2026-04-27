@@ -63,7 +63,7 @@ public class CreditService {
                 log.debug("Credit denied - " + deniedMessage);
                 statementService.setStatus(statement, ApplicationStatus.CC_DENIED, ChangeType.AUTOMATIC);
                 statementService.updateStatement(statement);
-                documentService.sendCreditDenied(UUID.fromString(statementId));
+                documentService.sendStatementDenied(UUID.fromString(statementId));
 
                 throw new DeniedException(deniedMessage);
 

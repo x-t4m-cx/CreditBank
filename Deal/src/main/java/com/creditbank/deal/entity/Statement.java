@@ -11,6 +11,7 @@ import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Entity
 @Getter
@@ -55,4 +56,12 @@ public class Statement {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "status_history", columnDefinition = "jsonb", nullable = false)
     private List<StatusHistory> statusHistory;
+
+
+    @PrePersist
+    public void prePersist() {
+        if (sesCode == null) {
+            sesCode = String.format("%04d", ThreadLocalRandom.current().nextInt(1000, 10000));
+        }
+    }
 }
