@@ -57,11 +57,4 @@ public class Statement {
     @Column(name = "status_history", columnDefinition = "jsonb", nullable = false)
     private List<StatusHistory> statusHistory;
 
-
-    @PrePersist
-    public void prePersist() {
-        if (sesCode == null) {
-            sesCode = String.format("%04d", ThreadLocalRandom.current().nextInt(1000, 10000));
-        }
-    }
 }

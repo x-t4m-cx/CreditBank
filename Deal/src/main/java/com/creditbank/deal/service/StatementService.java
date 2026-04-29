@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @Slf4j
@@ -56,9 +57,21 @@ public class StatementService {
         var history = statusHistoryMapper.toEntity(status, changeType);
         statement.getStatusHistory().add(history);
     }
+    public void updateStatementWithSesCode(Statement statement) {
+        String sesCode = String.format("%04d",
+                ThreadLocalRandom.current().nextInt(1000, 10000));
+        statement.setSesCode(sesCode);
 
+        updateStatement(statement);
+    }
     public void updateStatement(Statement statement) {
         Statement updated = repository.save(statement);
         log.debug("Statement updated - id: {}", updated.getStatementId());
+    }
+
+    public boolean verifyCode(UUID statementId, String code) {
+        Statement statement = getStatementById(statementId);
+        String trueCode = statement.getSesCode();
+        return code.equals(trueCode);
     }
 }

@@ -24,6 +24,8 @@ class DealServiceTest {
     @Mock
     private OfferService offerService;
     @Mock
+    private DocumentService documentService;
+    @Mock
     private StatementService statementService;
 
     @InjectMocks

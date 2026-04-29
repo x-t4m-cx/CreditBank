@@ -35,6 +35,5 @@ public class DealService {
     @Transactional
     public void calculateCredit(FinishRegistrationRequestDto request, String statementId) {
         creditService.calculateCredit(request, statementId);
-        documentService.sendCreateDocumentRequest(UUID.fromString(statementId));
     }
 }

@@ -52,8 +52,10 @@ public class CreditService {
 
             log.debug("Credit calculated - id: {}", credit.getCreditId());
             statement.setCredit(credit);
+
             statementService.setStatus(statement, ApplicationStatus.CC_APPROVED, ChangeType.AUTOMATIC);
             statementService.updateStatement(statement);
+
             documentService.sendCreateDocumentRequest(UUID.fromString(statementId));
 
         } catch (HttpClientErrorException ex) {

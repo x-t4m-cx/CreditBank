@@ -11,8 +11,10 @@ import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDate;
@@ -25,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest(properties = {
         "CALCULATOR_URL=http://calculator:8080"
@@ -39,6 +42,9 @@ public class ApplyOfferLockTest {
     @Autowired
     private DealService dealService;
 
+    @MockitoBean
+    private DocumentService documentService;
+
     @Autowired
     private StatementRepository statementRepository;
 
@@ -52,6 +58,9 @@ public class ApplyOfferLockTest {
 
     @BeforeEach
     void setup() {
+        Mockito.doNothing().when(documentService)
+                .sendFinishRegistrationRequest(any());
+
         statementRepository.deleteAllInBatch();
         clientRepository.deleteAllInBatch();
 

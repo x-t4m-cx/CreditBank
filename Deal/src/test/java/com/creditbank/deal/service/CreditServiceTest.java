@@ -43,6 +43,8 @@ class CreditServiceTest {
     @Mock
     private ClientService clientService;
     @Mock
+    private DocumentService documentService;
+    @Mock
     private CreditMapper creditMapper;
     @Mock
     private ScoringDataMapper scoringDataMapper;
