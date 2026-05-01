@@ -5,6 +5,7 @@ import com.creditbank.deal.entity.Client;
 import com.creditbank.deal.entity.Statement;
 import com.creditbank.deal.enums.ApplicationStatus;
 import com.creditbank.deal.enums.ChangeType;
+import com.creditbank.deal.exception.VerifyException;
 import com.creditbank.deal.mapper.StatementMapper;
 import com.creditbank.deal.mapper.StatusHistoryMapper;
 import com.creditbank.deal.repository.StatementRepository;
@@ -69,9 +70,11 @@ public class StatementService {
         log.debug("Statement updated - id: {}", updated.getStatementId());
     }
 
-    public boolean verifyCode(UUID statementId, String code) {
+    public void verifyCode(UUID statementId, String code) {
         Statement statement = getStatementById(statementId);
         String trueCode = statement.getSesCode();
-        return code.equals(trueCode);
+        if (!code.equals(trueCode)) {
+            throw new VerifyException("The codes do not match");
+        }
     }
 }

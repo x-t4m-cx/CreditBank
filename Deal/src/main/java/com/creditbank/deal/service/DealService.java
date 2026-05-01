@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +28,7 @@ public class DealService {
     @Transactional
     public void applyOffer(LoanOfferDto offer) {
         offerService.applyOffer(offer);
-        documentService.sendFinishRegistrationRequest(offer.getStatementId());
+        documentService.sendFinishRegistration(offer.getStatementId());
     }
 
     @Transactional

@@ -40,7 +40,7 @@ class DocumentServiceTest {
     private DocumentService documentService;
 
     @Test
-    void shouldSendFinishRegistrationRequestWhenValidStatementIdProvided() {
+    void shouldSendFinishRegistrationWhenValidStatementIdProvided() {
         UUID statementId = UUID.randomUUID();
         String topicName = "finish-registration";
         String email = "client@example.com";
@@ -53,7 +53,7 @@ class DocumentServiceTest {
         when(clientService.getClientByStatementId(statementId)).thenReturn(client);
         when(textProperties.getMessages()).thenReturn(Map.of(EmailTheme.FINISH_REGISTRATION.toString(), textMessage));
 
-        documentService.sendFinishRegistrationRequest(statementId);
+        documentService.sendFinishRegistration(statementId);
 
         verify(topicProperties).getFinishRegistration();
         verify(clientService).getClientByStatementId(statementId);
@@ -61,7 +61,7 @@ class DocumentServiceTest {
     }
 
     @Test
-    void shouldSendCreateDocumentRequestWhenValidStatementIdProvided() {
+    void shouldSendCreateDocumentWhenValidStatementIdProvided() {
         UUID statementId = UUID.randomUUID();
         String topicName = "create-documents";
         String email = "client@example.com";
@@ -74,7 +74,7 @@ class DocumentServiceTest {
         when(clientService.getClientByStatementId(statementId)).thenReturn(client);
         when(textProperties.getMessages()).thenReturn(Map.of(EmailTheme.CREATE_DOCUMENTS.toString(), textMessage));
 
-        documentService.sendCreateDocumentRequest(statementId);
+        documentService.sendCreateDocument(statementId);
 
         verify(topicProperties).getCreateDocuments();
         verify(clientService).getClientByStatementId(statementId);
@@ -100,7 +100,7 @@ class DocumentServiceTest {
         when(clientService.getClientByStatementId(statementId)).thenReturn(client);
         when(textProperties.getMessages()).thenReturn(Map.of(EmailTheme.SEND_DOCUMENTS.toString(), textMessage));
 
-        documentService.sendSendDocumentRequest(statementId);
+        documentService.sendDocuments(statementId);
 
         verify(statementService).getStatementById(statementId);
         verify(statementService).setStatus(statement, ApplicationStatus.PREPARE_DOCUMENTS, ChangeType.MANUAL);
@@ -130,7 +130,7 @@ class DocumentServiceTest {
         when(clientService.getClientByStatementId(statementId)).thenReturn(client);
         when(textProperties.getMessages()).thenReturn(Map.of(EmailTheme.SEND_SES.toString(), textTemplate));
 
-        documentService.sendSignDocumentRequest(statementId);
+        documentService.signDocuments(statementId);
 
         verify(statementService).getStatementById(statementId);
         verify(statementService).updateStatementWithSesCode(statement);
@@ -160,7 +160,7 @@ class DocumentServiceTest {
     }
 
     @Test
-    void shouldSendCreditIssueCreditWhenValidStatementIdProvided() {
+    void shouldSendCreditIssueWhenValidStatementIdProvided() {
         UUID statementId = UUID.randomUUID();
         String topicName = "credit-issued";
         String email = "client@example.com";
@@ -178,7 +178,7 @@ class DocumentServiceTest {
         when(clientService.getClientByStatementId(statementId)).thenReturn(client);
         when(textProperties.getMessages()).thenReturn(Map.of(EmailTheme.CREDIT_ISSUED.toString(), textMessage));
 
-        documentService.sendCreditIssueCredit(statementId);
+        documentService.sendCreditIssue(statementId);
 
         verify(statementService).getStatementById(statementId);
         verify(statementService).setStatus(statement, ApplicationStatus.DOCUMENT_SIGNED, ChangeType.MANUAL);
@@ -208,7 +208,7 @@ class DocumentServiceTest {
         when(textProperties.getMessages()).thenReturn(Map.of(theme.toString(), textMessage));
         when(topicProperties.getSendDocuments()).thenReturn(topic);
 
-        documentService.sendSendDocumentRequest(statementId);
+        documentService.sendDocuments(statementId);
 
         ArgumentCaptor<EmailMessage> messageCaptor = ArgumentCaptor.forClass(EmailMessage.class);
         verify(producer).sendMessage(eq(topic), eq(statementId.toString()), messageCaptor.capture());
@@ -243,7 +243,7 @@ class DocumentServiceTest {
         when(textProperties.getMessages()).thenReturn(Map.of(theme.toString(), textTemplate));
         when(topicProperties.getSendSes()).thenReturn(topic);
 
-        documentService.sendSignDocumentRequest(statementId);
+        documentService.signDocuments(statementId);
 
         ArgumentCaptor<EmailMessage> messageCaptor = ArgumentCaptor.forClass(EmailMessage.class);
         verify(producer).sendMessage(eq(topic), eq(statementId.toString()), messageCaptor.capture());
@@ -265,7 +265,7 @@ class DocumentServiceTest {
                 .thenThrow(new RuntimeException("Statement not found"));
 
         assertThrows(RuntimeException.class, () ->
-                documentService.sendSendDocumentRequest(statementId));
+                documentService.sendDocuments(statementId));
 
         verify(producer, never()).sendMessage(any(), any(), any());
     }
@@ -289,7 +289,7 @@ class DocumentServiceTest {
         when(clientService.getClientByStatementId(statementId)).thenReturn(client);
         when(textProperties.getMessages()).thenReturn(Map.of(EmailTheme.CREDIT_ISSUED.toString(), textMessage));
 
-        documentService.sendCreditIssueCredit(statementId);
+        documentService.sendCreditIssue(statementId);
 
         verify(statementService).setStatus(statement, ApplicationStatus.DOCUMENT_SIGNED, ChangeType.MANUAL);
         verify(statementService).setStatus(statement, ApplicationStatus.CREDIT_ISSUED, ChangeType.MANUAL);
@@ -329,19 +329,19 @@ class DocumentServiceTest {
         when(textProperties.getMessages()).thenReturn(messageMap);
         when(statementService.getStatementById(any(UUID.class))).thenReturn(statement);
 
-        documentService.sendFinishRegistrationRequest(statementId);
+        documentService.sendFinishRegistration(statementId);
         verify(producer).sendMessage(eq("finish-registration"), eq(statementId.toString()), any());
 
-        documentService.sendCreateDocumentRequest(statementId);
+        documentService.sendCreateDocument(statementId);
         verify(producer).sendMessage(eq("create-documents"), eq(statementId.toString()), any());
 
-        documentService.sendSendDocumentRequest(statementId);
+        documentService.sendDocuments(statementId);
         verify(producer).sendMessage(eq("send-documents"), eq(statementId.toString()), any());
 
-        documentService.sendSignDocumentRequest(statementId);
+        documentService.signDocuments(statementId);
         verify(producer).sendMessage(eq("send-ses"), eq(statementId.toString()), any());
 
-        documentService.sendCreditIssueCredit(statementId);
+        documentService.sendCreditIssue(statementId);
         verify(producer).sendMessage(eq("credit-issued"), eq(statementId.toString()), any());
 
         documentService.sendStatementDenied(statementId);
@@ -370,7 +370,7 @@ class DocumentServiceTest {
         when(textProperties.getMessages()).thenReturn(Map.of(theme.toString(), textTemplate));
         when(topicProperties.getSendSes()).thenReturn(topic);
 
-        documentService.sendSignDocumentRequest(statementId);
+        documentService.signDocuments(statementId);
 
         ArgumentCaptor<EmailMessage> messageCaptor = ArgumentCaptor.forClass(EmailMessage.class);
         verify(producer).sendMessage(eq(topic), eq(statementId.toString()), messageCaptor.capture());

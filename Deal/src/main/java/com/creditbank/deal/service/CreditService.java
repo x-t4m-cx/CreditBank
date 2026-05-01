@@ -56,7 +56,7 @@ public class CreditService {
             statementService.setStatus(statement, ApplicationStatus.CC_APPROVED, ChangeType.AUTOMATIC);
             statementService.updateStatement(statement);
 
-            documentService.sendCreateDocumentRequest(UUID.fromString(statementId));
+            documentService.sendCreateDocument(UUID.fromString(statementId));
 
         } catch (HttpClientErrorException ex) {
             if (ex.getStatusCode() == HttpStatus.UNPROCESSABLE_ENTITY) {

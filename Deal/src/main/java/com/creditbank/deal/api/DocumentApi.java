@@ -1,5 +1,6 @@
 package com.creditbank.deal.api;
 
+import com.creditbank.deal.dto.request.VerifySesCodeRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -34,9 +35,10 @@ public interface DocumentApi {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202", description = "Updated statement and send email"),
-            @ApiResponse(responseCode = "404", description = "unequal codes"),
+            @ApiResponse(responseCode = "400", description = "not correct codes"),
+            @ApiResponse(responseCode = "422", description = "codes do not match"),
             @ApiResponse(responseCode = "404", description = "Not found statement"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    ResponseEntity<Void> verifySesCode(String statementId, String code);
+    ResponseEntity<Void> verifySesCode(String statementId, VerifySesCodeRequest code);
 }

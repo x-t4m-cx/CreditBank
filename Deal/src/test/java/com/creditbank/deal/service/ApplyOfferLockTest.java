@@ -59,7 +59,7 @@ public class ApplyOfferLockTest {
     @BeforeEach
     void setup() {
         Mockito.doNothing().when(documentService)
-                .sendFinishRegistrationRequest(any());
+                .sendFinishRegistration(any());
 
         statementRepository.deleteAllInBatch();
         clientRepository.deleteAllInBatch();

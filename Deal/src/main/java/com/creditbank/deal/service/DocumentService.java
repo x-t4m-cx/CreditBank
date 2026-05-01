@@ -4,6 +4,7 @@ import com.creditbank.deal.client.kafka.KafkaProducer;
 import com.creditbank.deal.config.property.EmailMessagesTextProperties;
 import com.creditbank.deal.config.property.KafkaTopicProperties;
 import com.creditbank.deal.dto.dossier.EmailMessage;
+import com.creditbank.deal.dto.request.VerifySesCodeRequest;
 import com.creditbank.deal.entity.Client;
 import com.creditbank.deal.entity.Statement;
 import com.creditbank.deal.enums.ApplicationStatus;
@@ -29,41 +30,58 @@ public class DocumentService {
         producer.sendMessage(topic, statementId.toString(), message);
     }
 
-    public void sendFinishRegistrationRequest(UUID statementId) {
-        sendEmailRequest(topicProperties.getFinishRegistration(), statementId, EmailTheme.FINISH_REGISTRATION);
+    public void sendFinishRegistration(UUID statementId) {
+        sendEmailRequest(topicProperties.getFinishRegistration(),
+                statementId, EmailTheme.FINISH_REGISTRATION);
     }
 
-    public void sendCreateDocumentRequest(UUID statementId) {
-        sendEmailRequest(topicProperties.getCreateDocuments(), statementId, EmailTheme.CREATE_DOCUMENTS);
+    public void sendCreateDocument(UUID statementId) {
+        sendEmailRequest(topicProperties.getCreateDocuments(),
+                statementId, EmailTheme.CREATE_DOCUMENTS);
+    }
+    public void sendStatementDenied(UUID statementId){
+        sendEmailRequest(topicProperties.getStatementDenied(),
+                statementId, EmailTheme.STATEMENT_DENIED);
     }
 
     @Transactional
-    public void sendSendDocumentRequest(UUID statementId) {
+    public void sendDocuments(UUID statementId) {
         Statement statement = statementService.getStatementById(statementId);
-        statementService.setStatus(statement, ApplicationStatus.PREPARE_DOCUMENTS, ChangeType.MANUAL);
+        statementService.setStatus(statement,
+                ApplicationStatus.PREPARE_DOCUMENTS, ChangeType.MANUAL);
         statementService.updateStatement(statement);
 
-        sendEmailRequest(topicProperties.getSendDocuments(), statementId, EmailTheme.SEND_DOCUMENTS);
+        sendEmailRequest(topicProperties.getSendDocuments(),
+                statementId, EmailTheme.SEND_DOCUMENTS);
     }
 
     @Transactional
-    public void sendSignDocumentRequest(UUID statementId) {
+    public void signDocuments(UUID statementId) {
         Statement statement = statementService.getStatementById(statementId);
         statementService.updateStatementWithSesCode(statement);
-        sendEmailRequest(topicProperties.getSendSes(), statementId, EmailTheme.SEND_SES);
-    }
 
-    public void sendStatementDenied(UUID statementId){
-        sendEmailRequest(topicProperties.getStatementDenied(), statementId, EmailTheme.STATEMENT_DENIED);
+        sendEmailRequest(topicProperties.getSendSes(),
+                statementId, EmailTheme.SEND_SES);
     }
 
     @Transactional
-    public void sendCreditIssueCredit(UUID statementId) {
+    public void verifySesCode(UUID statementId, VerifySesCodeRequest code) {
+        statementService.verifyCode(statementId, code.getCode());
+
+        sendCreditIssue(statementId);
+    }
+
+    public void sendCreditIssue(UUID statementId) {
+
         Statement statement = statementService.getStatementById(statementId);
-        statementService.setStatus(statement, ApplicationStatus.DOCUMENT_SIGNED, ChangeType.MANUAL);
-        statementService.setStatus(statement, ApplicationStatus.CREDIT_ISSUED, ChangeType.MANUAL);
+        statementService.setStatus(statement,
+                ApplicationStatus.DOCUMENT_SIGNED, ChangeType.MANUAL);
+        statementService.setStatus(statement,
+                ApplicationStatus.CREDIT_ISSUED, ChangeType.MANUAL);
         statementService.updateStatement(statement);
-        sendEmailRequest(topicProperties.getCreditIssued(), statementId, EmailTheme.CREDIT_ISSUED);
+
+        sendEmailRequest(topicProperties.getCreditIssued(),
+                statementId, EmailTheme.CREDIT_ISSUED);
     }
 
     private EmailMessage createEmailMessage(UUID statementId, EmailTheme theme) {
@@ -81,4 +99,5 @@ public class DocumentService {
                 .statementId(statementId)
                 .build();
     }
+
 }
