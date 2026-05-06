@@ -1,67 +1,6 @@
 version: "3.9"
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: deal-postgres
-    environment:
-      POSTGRES_DB: $POSTGRES_DB
-      POSTGRES_USER: $POSTGRES_USER
-      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
-    networks:
-      - internal
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  calculator:
-    build:
-      context: ./Calculator
-      dockerfile: Dockerfile
-    container_name: calculator-service
-    networks:
-      - internal
-
-  statement:
-    build:
-      context: ./Statement
-      dockerfile: Dockerfile
-    container_name: statement-service
-    depends_on:
-      deal:
-        condition: service_started
-    ports:
-      - "8090:8080"
-    environment:
-      DEAL_URL: http://deal-service:8080
-    networks:
-      - internal
-      - external
-
-  deal:
-    build:
-      context: ./Deal
-      dockerfile: Dockerfile
-    container_name: deal-service
-    depends_on:
-      postgres:
-        condition: service_healthy
-      calculator:
-        condition: service_started
-    ports: ["8080:8080", "8081:8081"]
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://deal-postgres:5432/${POSTGRES_DB}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      CALCULATOR_URL: http://calculator-service:8080
-    networks:
-      - internal
-      - external
-
   prometheus:
     image: prom/prometheus:v2.51.2
     container_name: prometheus
@@ -80,6 +19,139 @@ services:
     networks:
       - external
 
+  postgres:
+    image: postgres:15-alpine
+    container_name: deal-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - internal
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+    networks:
+      - internal
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "2181" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - internal
+    healthcheck:
+      test: [ "CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list" ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  calculator:
+    build:
+      context: ./Calculator
+      dockerfile: Dockerfile
+    container_name: calculator-service
+    networks:
+      - internal
+    restart: on-failure
+
+  statement:
+    build:
+      context: ./Statement
+      dockerfile: Dockerfile
+    container_name: statement-service
+    depends_on:
+      deal:
+        condition: service_started
+    ports:
+      - "8090:8080"
+    environment:
+      DEAL_URL: http://deal-service:8080
+    networks:
+      - internal
+      - external
+    restart: on-failure
+
+  dossier:
+    build:
+      context: ./Dossier
+      dockerfile: Dockerfile
+    container_name: dossier-service
+    depends_on:
+      kafka:
+        condition: service_healthy
+      deal:
+        condition: service_started
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_KAFKA_CONSUMER_GROUP_ID: dossier-group
+      SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET: latest
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES: "*"
+      GMAIL_SMTP_USERNAME: ${GMAIL_SMTP_USERNAME}
+      GMAIL_SMTP_PASSWORD: ${GMAIL_SMTP_PASSWORD}
+    networks:
+      - internal
+    restart: on-failure
+
+  deal:
+    build:
+      context: ./Deal
+      dockerfile: Dockerfile
+    container_name: deal-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      calculator:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      CALCULATOR_URL: http://calculator-service:8080
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+      - internal
+      - external
+    restart: on-failure
+
 networks:
   internal:
     driver: bridge
@@ -87,4 +159,6 @@ networks:
     driver: bridge
 
 volumes:
-  pgdata:
+  pg_data:
+  kafka_data:
+  zookeeper_data:

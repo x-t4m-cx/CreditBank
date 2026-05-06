@@ -2,6 +2,7 @@ package com.creditbank.deal.handler;
 
 import com.creditbank.deal.dto.response.ErrorResponse;
 import com.creditbank.deal.exception.DeniedException;
+import com.creditbank.deal.exception.VerifyException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -24,6 +25,22 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+
+    @ExceptionHandler(VerifyException.class)
+    public ResponseEntity<ErrorResponse> handleVerifyException(
+            VerifyException ex){
+        log.warn("Code not verify", ex);
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
+                .error("Code not verify")
+                .message(ex.getMessage())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(response);
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleEntityNotFoundException(
             EntityNotFoundException ex

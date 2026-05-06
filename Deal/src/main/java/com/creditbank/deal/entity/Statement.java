@@ -55,4 +55,5 @@ public class Statement {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "status_history", columnDefinition = "jsonb", nullable = false)
     private List<StatusHistory> statusHistory;
+
 }

@@ -5,6 +5,7 @@ import com.creditbank.deal.entity.Client;
 import com.creditbank.deal.entity.Statement;
 import com.creditbank.deal.enums.ApplicationStatus;
 import com.creditbank.deal.enums.ChangeType;
+import com.creditbank.deal.exception.VerifyException;
 import com.creditbank.deal.mapper.StatementMapper;
 import com.creditbank.deal.mapper.StatusHistoryMapper;
 import com.creditbank.deal.repository.StatementRepository;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @Slf4j
@@ -56,9 +58,23 @@ public class StatementService {
         var history = statusHistoryMapper.toEntity(status, changeType);
         statement.getStatusHistory().add(history);
     }
+    public void updateStatementWithSesCode(Statement statement) {
+        String sesCode = String.format("%04d",
+                ThreadLocalRandom.current().nextInt(1000, 10000));
+        statement.setSesCode(sesCode);
 
+        updateStatement(statement);
+    }
     public void updateStatement(Statement statement) {
         Statement updated = repository.save(statement);
         log.debug("Statement updated - id: {}", updated.getStatementId());
+    }
+
+    public void verifyCode(UUID statementId, String code) {
+        Statement statement = getStatementById(statementId);
+        String trueCode = statement.getSesCode();
+        if (!code.equals(trueCode)) {
+            throw new VerifyException("The codes do not match");
+        }
     }
 }

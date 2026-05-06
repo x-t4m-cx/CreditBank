@@ -1,6 +1,6 @@
 package com.creditbank.deal.service;
 
-import com.creditbank.deal.client.CalculatorClient;
+import com.creditbank.deal.client.rest.CalculatorClient;
 import com.creditbank.deal.dto.calculator.response.CreditDto;
 import com.creditbank.deal.dto.response.ErrorResponse;
 import com.creditbank.deal.dto.request.FinishRegistrationRequestDto;
@@ -42,6 +42,8 @@ class CreditServiceTest {
     private StatementService statementService;
     @Mock
     private ClientService clientService;
+    @Mock
+    private DocumentService documentService;
     @Mock
     private CreditMapper creditMapper;
     @Mock

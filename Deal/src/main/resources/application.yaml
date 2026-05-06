@@ -17,8 +17,15 @@ spring:
       hibernate:
         format_sql: true
   liquibase:
-    change-log:
-      classpath:db/changelog/main-changelog.xml
+    change-log: classpath:db/changelog/main-changelog.xml
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+calculator:
+  url: ${CALCULATOR_URL:http://localhost:8081}
 
 logging:
   level:
@@ -26,9 +33,6 @@ logging:
     com.creditbank.deal: DEBUG
     org.hibernate.SQL: OFF
     org.hibernate.type.descriptor.sql.BasicBinder: OFF
-
-calculator:
-  url: ${CALCULATOR_URL}
 
 springdoc:
   api-docs:
@@ -51,3 +55,22 @@ management:
       enabled: true
   server:
     port: 8081
+
+kafka:
+  topics:
+    finish-registration: finish-registration
+    create-documents: create-documents
+    send-documents: send-documents
+    send-ses: send-ses
+    credit-issued: credit-issued
+    statement-denied: statement-denied
+
+
+email:
+  messages:
+    FINISH_REGISTRATION: "Требуется завершение регистрации"
+    CREATE_DOCUMENTS: "Документы сформированы"
+    SEND_DOCUMENTS: "Документы отправлены на подпись"
+    SEND_SES: "Код подтверждения отправлен. Ваш код - {code}"
+    CREDIT_ISSUED: "Кредит успешно выдан"
+    STATEMENT_DENIED: "В заявке отказано"
