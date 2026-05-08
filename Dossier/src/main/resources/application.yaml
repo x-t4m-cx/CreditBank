@@ -26,7 +26,14 @@ spring:
         spring.json.trusted.packages: ${SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES}
         spring.json.type.mapping: >
           com.creditbank.deal.dto.dossier.EmailMessage:com.creditbank.dossier.dto.EmailMessage
-
+kafka:
+  topics:
+    - finish-registration
+    - create-documents
+    - send-documents
+    - send-ses
+    - credit-issued
+    - statement-denied
 logging:
   level:
     root: INFO
