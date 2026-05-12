@@ -12,9 +12,9 @@ import org.springframework.web.client.RestClient;
 @Configuration
 public class GatewayConfig {
 
-    @Value("deal.url")
+    @Value("${deal.url}")
     private String dealUrl;
-    @Value("statement.url")
+    @Value("${statement.url}")
     private String statementUrl;
 
     @Bean
@@ -34,7 +34,7 @@ public class GatewayConfig {
     }
 
     @Bean
-    public OpenAPI dealOpenApi() {
+    public OpenAPI gatewayOpenApi() {
         return new OpenAPI()
                 .info(new Info()
                         .title("MC Gateway")

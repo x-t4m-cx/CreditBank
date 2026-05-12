@@ -52,25 +52,6 @@ public interface StatementApi {
                     )
             ),
             @ApiResponse(
-                    responseCode = "404",
-                    description = "Statement not found",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponse.class),
-                            examples = @ExampleObject(
-                                    name = "ErrorResponse",
-                                    value = """
-                                            {
-                                              "timestamp": "2026-03-12T10:15:30.123",
-                                              "status": 404,
-                                              "error": "Statement not found error",
-                                              "message": "Statement not found - id: 3fa85f64-5717-4562-b3fc-2c963f66afa6"
-                                            }
-                                            """
-                            )
-                    )
-            ),
-            @ApiResponse(
                     responseCode = "500",
                     description = "Internal server error",
                     content = @Content(

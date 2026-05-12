@@ -1,6 +1,7 @@
 package com.creditbank.deal.service;
 
 import com.creditbank.deal.dto.request.LoanStatementRequestDto;
+import com.creditbank.deal.dto.response.StatementDto;
 import com.creditbank.deal.entity.Client;
 import com.creditbank.deal.entity.Statement;
 import com.creditbank.deal.enums.ApplicationStatus;
@@ -12,8 +13,10 @@ import com.creditbank.deal.repository.StatementRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -36,7 +39,12 @@ public class StatementService {
         log.debug("Statement created - id: {}", savedStatement.getStatementId());
         return savedStatement;
     }
-
+    // Пагинация; findAll() ресурсоемкий запрос - подумать
+    public List<StatementDto> getAllStatements(Pageable pageable) {
+        return repository.findAll(pageable).stream()
+                .map(statementMapper::toDto)
+                .toList();
+    }
     public Statement getStatementById(UUID statementId) {
         Statement statement = repository.findById(statementId)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -44,7 +52,10 @@ public class StatementService {
         log.debug("Statement found - id: {}", statementId);
         return statement;
     }
-
+    public StatementDto getStatementById(String statementId){
+        Statement statement = getStatementById(UUID.fromString(statementId));
+        return statementMapper.toDto(statement);
+    }
     public Statement getStatementByIdWithLock(UUID statementId) {
         Statement statement = repository.findByIdWithLock(statementId)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -77,4 +88,6 @@ public class StatementService {
             throw new VerifyException("The codes do not match");
         }
     }
+
+
 }

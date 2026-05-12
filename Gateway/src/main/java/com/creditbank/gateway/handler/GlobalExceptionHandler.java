@@ -1,6 +1,10 @@
-package com.creditbank.statement.handler;
+package com.creditbank.gateway.handler;
 
-import com.creditbank.statement.dto.response.ErrorResponse;
+import com.creditbank.gateway.dto.response.ErrorResponse;
+import com.creditbank.gateway.exception.BadRequestException;
+import com.creditbank.gateway.exception.DeniedException;
+import com.creditbank.gateway.exception.StatementNotFoundException;
+import com.creditbank.gateway.exception.VerifyException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
@@ -19,7 +23,35 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+    @ExceptionHandler(DeniedException.class)
+    public ResponseEntity<ErrorResponse> handleDeniedException(DeniedException ex) {
 
+        log.warn("Denied Exception", ex);
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
+                .error("Denied")
+                .message(ex.getMessage())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(errorResponse);
+    }
+    @ExceptionHandler(VerifyException.class)
+    public ResponseEntity<ErrorResponse> handleVerifyException(
+            VerifyException ex){
+        log.warn("Code not verify", ex);
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
+                .error("Code not verify")
+                .message(ex.getMessage())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(response);
+    }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
@@ -59,7 +91,7 @@ public class GlobalExceptionHandler {
                 .message(ex.getMessage())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND.value()).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(
@@ -82,7 +114,23 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(errorResponse);
     }
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException ex) {
 
+        log.error("bad request exception", ex);
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("bad request")
+                .message(ex.getMessage())
+                .errors(ex.getErrors())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(errorResponse);
+    }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
 
