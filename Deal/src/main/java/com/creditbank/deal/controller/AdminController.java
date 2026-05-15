@@ -1,8 +1,10 @@
 package com.creditbank.deal.controller;
 
+import com.creditbank.deal.api.AdminApi;
 import com.creditbank.deal.dto.response.StatementDto;
 import com.creditbank.deal.service.StatementService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -17,7 +19,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/deal/admin/")
-public class AdminController {
+public class AdminController implements AdminApi {
 
     private final StatementService statementService;
 
@@ -27,7 +29,7 @@ public class AdminController {
     }
 
     @GetMapping("/statement")
-    public ResponseEntity<List<StatementDto>> getAllStatements(
+    public ResponseEntity<Page<StatementDto>> getAllStatements(
             @PageableDefault(
                     size = 20,
                     sort = "creationDate",

@@ -160,8 +160,11 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       CALCULATOR_URL: http://calculator-service:8080
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "8085:8080"
     networks:
       - internal
+      - external
     restart: on-failure
 
 networks:

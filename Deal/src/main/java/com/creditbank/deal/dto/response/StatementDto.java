@@ -24,9 +24,9 @@ public class StatementDto {
 
     private UUID statementId;
 
-    private Client client;
+    private ClientDto client;
 
-    private Credit credit;
+    private CreditDto credit;
 
     private ApplicationStatus status;
 

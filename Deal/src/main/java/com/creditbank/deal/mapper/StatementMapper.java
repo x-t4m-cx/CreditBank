@@ -15,6 +15,8 @@ public interface StatementMapper {
     @Mapping(target = "statusHistory", expression = "java(new java.util.ArrayList<>())")
     Statement toEntity(Client client);
 
+    @Mapping(target = "client.employment.employmentStatus", source = "client.employment.status")
+    @Mapping(target = "client.employment.employerINN", source = "client.employment.employmentInn")
     StatementDto toDto(Statement statement);
 }
 
