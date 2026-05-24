@@ -74,10 +74,8 @@ public class DocumentService {
     public void sendCreditIssue(UUID statementId) {
 
         Statement statement = statementService.getStatementById(statementId);
-        statementService.setStatus(statement,
-                ApplicationStatus.DOCUMENT_SIGNED, ChangeType.MANUAL);
-        statementService.setStatus(statement,
-                ApplicationStatus.CREDIT_ISSUED, ChangeType.MANUAL);
+
+        statementService.signStatement(statement);
         statementService.updateStatement(statement);
 
         sendEmailRequest(topicProperties.getCreditIssued(),

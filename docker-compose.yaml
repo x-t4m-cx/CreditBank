@@ -88,6 +88,25 @@ services:
       - internal
     restart: on-failure
 
+  gateway:
+    build:
+      context: ./Gateway
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    depends_on:
+      deal:
+        condition: service_started
+      statement:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    networks:
+      - internal
+      - external
+    environment:
+      DEAL_URL: http://deal-service:8080
+      STATEMENT_URL: http://statement-service:8080
+
   statement:
     build:
       context: ./Statement
@@ -96,13 +115,10 @@ services:
     depends_on:
       deal:
         condition: service_started
-    ports:
-      - "8090:8080"
     environment:
       DEAL_URL: http://deal-service:8080
     networks:
       - internal
-      - external
     restart: on-failure
 
   dossier:
@@ -138,15 +154,14 @@ services:
         condition: service_started
       kafka:
         condition: service_healthy
-    ports:
-      - "8080:8080"
-      - "8081:8081"
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       CALCULATOR_URL: http://calculator-service:8080
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "8085:8080"
     networks:
       - internal
       - external

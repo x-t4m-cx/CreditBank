@@ -1,6 +1,7 @@
 package com.creditbank.deal.service;
 
 import com.creditbank.deal.dto.request.LoanStatementRequestDto;
+import com.creditbank.deal.dto.response.StatementDto;
 import com.creditbank.deal.entity.Client;
 import com.creditbank.deal.entity.Statement;
 import com.creditbank.deal.enums.ApplicationStatus;
@@ -12,8 +13,12 @@ import com.creditbank.deal.repository.StatementRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -37,12 +42,22 @@ public class StatementService {
         return savedStatement;
     }
 
+    public Page<StatementDto> getAllStatements(Pageable pageable) {
+        return repository.findAll(pageable)
+                .map(statementMapper::toDto);
+    }
+
     public Statement getStatementById(UUID statementId) {
         Statement statement = repository.findById(statementId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Statement not found with id: " + statementId));
         log.debug("Statement found - id: {}", statementId);
         return statement;
+    }
+
+    public StatementDto getStatementById(String statementId){
+        Statement statement = getStatementById(UUID.fromString(statementId));
+        return statementMapper.toDto(statement);
     }
 
     public Statement getStatementByIdWithLock(UUID statementId) {
@@ -58,6 +73,7 @@ public class StatementService {
         var history = statusHistoryMapper.toEntity(status, changeType);
         statement.getStatusHistory().add(history);
     }
+
     public void updateStatementWithSesCode(Statement statement) {
         String sesCode = String.format("%04d",
                 ThreadLocalRandom.current().nextInt(1000, 10000));
@@ -65,6 +81,7 @@ public class StatementService {
 
         updateStatement(statement);
     }
+
     public void updateStatement(Statement statement) {
         Statement updated = repository.save(statement);
         log.debug("Statement updated - id: {}", updated.getStatementId());
@@ -76,5 +93,11 @@ public class StatementService {
         if (!code.equals(trueCode)) {
             throw new VerifyException("The codes do not match");
         }
+    }
+
+    public void signStatement(Statement statement) {
+        statement.setSignDate(LocalDateTime.now());
+        setStatus(statement, ApplicationStatus.DOCUMENT_SIGNED, ChangeType.MANUAL);
+        setStatus(statement, ApplicationStatus.CREDIT_ISSUED, ChangeType.MANUAL);
     }
 }

@@ -16,7 +16,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/deal")
 public class DealController implements DealApi {
+
     private final DealService service;
+
     @PostMapping("/statement")
     public ResponseEntity<List<LoanOfferDto>> createStatement(
             @Valid @RequestBody LoanStatementRequestDto request
