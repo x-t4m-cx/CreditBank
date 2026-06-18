@@ -8,11 +8,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +35,7 @@ class StatementControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private StatementService statementService;
 
     @Test
@@ -104,10 +105,15 @@ class StatementControllerTest {
     void applyOffer_returns200() throws Exception {
         doNothing().when(statementService).applyOffer(any());
 
-        String body = objectMapper.writeValueAsString(LoanOfferDto.builder()
+        LoanOfferDto dto = LoanOfferDto.builder()
                 .statementId(UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"))
+                .requestedAmount(BigDecimal.valueOf(250000))
                 .term(24)
-                .build());
+                .isInsuranceEnabled(true)
+                .isSalaryClient(false)
+                .build();
+
+        String body = objectMapper.writeValueAsString(dto);
 
         mockMvc.perform(post("/statement/offer")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -120,10 +126,15 @@ class StatementControllerTest {
         doThrow(new StatementNotFoundException("Statement not found - id: 3fa85f64-5717-4562-b3fc-2c963f66afa6"))
                 .when(statementService).applyOffer(any());
 
-        String body = objectMapper.writeValueAsString(LoanOfferDto.builder()
+        LoanOfferDto dto = LoanOfferDto.builder()
                 .statementId(UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"))
+                .requestedAmount(BigDecimal.valueOf(250000))
                 .term(24)
-                .build());
+                .isInsuranceEnabled(true)
+                .isSalaryClient(false)
+                .build();
+
+        String body = objectMapper.writeValueAsString(dto);
 
         mockMvc.perform(post("/statement/offer")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -138,10 +149,15 @@ class StatementControllerTest {
         doThrow(new RuntimeException("boom"))
                 .when(statementService).applyOffer(any());
 
-        String body = objectMapper.writeValueAsString(LoanOfferDto.builder()
+        LoanOfferDto dto = LoanOfferDto.builder()
                 .statementId(UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"))
+                .requestedAmount(BigDecimal.valueOf(250000))
                 .term(24)
-                .build());
+                .isInsuranceEnabled(true)
+                .isSalaryClient(false)
+                .build();
+
+        String body = objectMapper.writeValueAsString(dto);
 
         mockMvc.perform(post("/statement/offer")
                         .contentType(MediaType.APPLICATION_JSON)

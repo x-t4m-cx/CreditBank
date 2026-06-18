@@ -181,8 +181,7 @@ class DocumentServiceTest {
         documentService.sendCreditIssue(statementId);
 
         verify(statementService).getStatementById(statementId);
-        verify(statementService).setStatus(statement, ApplicationStatus.DOCUMENT_SIGNED, ChangeType.MANUAL);
-        verify(statementService).setStatus(statement, ApplicationStatus.CREDIT_ISSUED, ChangeType.MANUAL);
+        verify(statementService).signStatement(statement);
         verify(statementService).updateStatement(statement);
         verify(clientService).getClientByStatementId(statementId);
         verify(producer).sendMessage(eq(topicName), eq(statementId.toString()), any(EmailMessage.class));
@@ -291,8 +290,7 @@ class DocumentServiceTest {
 
         documentService.sendCreditIssue(statementId);
 
-        verify(statementService).setStatus(statement, ApplicationStatus.DOCUMENT_SIGNED, ChangeType.MANUAL);
-        verify(statementService).setStatus(statement, ApplicationStatus.CREDIT_ISSUED, ChangeType.MANUAL);
+        verify(statementService).signStatement(statement);
         verify(statementService, times(1)).updateStatement(statement);
     }
 

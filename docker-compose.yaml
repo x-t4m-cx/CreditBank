@@ -81,8 +81,10 @@ services:
 
   calculator:
     build:
-      context: ./Calculator
+      context: .
       dockerfile: Dockerfile
+      args:
+        SERVICE: Calculator
     container_name: calculator-service
     networks:
       - internal
@@ -90,8 +92,10 @@ services:
 
   gateway:
     build:
-      context: ./Gateway
+      context: .
       dockerfile: Dockerfile
+      args:
+        SERVICE: Gateway
     container_name: gateway-service
     depends_on:
       deal:
@@ -109,8 +113,10 @@ services:
 
   statement:
     build:
-      context: ./Statement
+      context: .
       dockerfile: Dockerfile
+      args:
+        SERVICE: Statement
     container_name: statement-service
     depends_on:
       deal:
@@ -123,8 +129,10 @@ services:
 
   dossier:
     build:
-      context: ./Dossier
+      context: .
       dockerfile: Dockerfile
+      args:
+        SERVICE: Dossier
     container_name: dossier-service
     depends_on:
       kafka:
@@ -144,8 +152,10 @@ services:
 
   deal:
     build:
-      context: ./Deal
+      context: .
       dockerfile: Dockerfile
+      args:
+        SERVICE: Deal
     container_name: deal-service
     depends_on:
       postgres:
